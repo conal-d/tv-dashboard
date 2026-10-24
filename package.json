@@ -1,0 +1,16 @@
+{
+  "name": "tv-dashboard",
+  "version": "1.0.0",
+  "description": "Xbox-inspired webOS TV dashboard with Playwright visual QA",
+  "type": "module",
+  "scripts": {
+    "qa:screenshots": "node qa/capture.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}

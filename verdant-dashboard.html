@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xbox TV Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --hue:105;
+  --bg-0:hsl(var(--hue) 30% 93%);
+  --bg-1:hsl(var(--hue) 45% 84%);
+  --ink:hsl(var(--hue) 45% 11%);
+  --ink-dim:hsl(var(--hue) 18% 32%);
+  --accent:hsl(var(--hue) 70% 28%);
+  --accent-hi:hsl(var(--hue) 75% 36%);
+  --glow:hsl(var(--hue) 80% 38% / .32);
+  --panel:hsl(var(--hue) 35% 98% / .66);
+  --panel-hi:hsl(var(--hue) 40% 100% / .88);
+  --line:hsl(var(--hue) 35% 28% / .22);
+  --on-accent:hsl(var(--hue) 60% 98%);
+  --orb-deep:hsl(var(--hue) 70% 14%);
+  --orb-ink:hsl(var(--hue) 100% 96%);
+  --orb-grad:radial-gradient(circle at 36% 30%,var(--orb-ink) 0%,var(--accent-hi) 9%,var(--accent) 32%,var(--orb-deep) 72%);
+  --display:"Chakra Petch","Trebuchet MS",system-ui,sans-serif;
+  --body:"Exo 2","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg-0:hsl(var(--hue) 45% 3%);
+    --bg-1:hsl(var(--hue) 60% 9%);
+    --ink:hsl(var(--hue) 55% 91%);
+    --ink-dim:hsl(var(--hue) 22% 64%);
+    --accent:hsl(var(--hue) 90% 32%);
+    --accent-hi:hsl(var(--hue) 100% 61%);
+    --glow:hsl(var(--hue) 100% 45% / .5);
+    --panel:hsl(var(--hue) 78% 5% / .96);
+    --panel-hi:hsl(var(--hue) 72% 9% / .98);
+    --line:hsl(var(--hue) 84% 55% / .42);
+    --on-accent:hsl(var(--hue) 70% 5%);
+    --orb-deep:hsl(var(--hue) 100% 5%);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg-0:hsl(var(--hue) 45% 3%);
+  --bg-1:hsl(var(--hue) 60% 9%);
+  --ink:hsl(var(--hue) 55% 91%);
+  --ink-dim:hsl(var(--hue) 22% 64%);
+  --accent:hsl(var(--hue) 90% 32%);
+  --accent-hi:hsl(var(--hue) 100% 61%);
+  --glow:hsl(var(--hue) 100% 45% / .5);
+  --panel:hsl(var(--hue) 78% 5% / .96);
+  --panel-hi:hsl(var(--hue) 72% 9% / .98);
+  --line:hsl(var(--hue) 84% 55% / .42);
+  --on-accent:hsl(var(--hue) 70% 5%);
+  --orb-deep:hsl(var(--hue) 100% 5%);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;background:var(--bg-0);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;overflow:hidden;color:var(--ink);background:radial-gradient(120% 90% at 68% 46%,var(--bg-1) 0%,var(--bg-0) 62%);font-family:var(--body);-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit}
+#gl{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;display:block;z-index:0}
+
+/* HUD: orb label + energy tube, positioned from the 3D orb each frame */
+.hud{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .45s ease}
+.hud.on{opacity:1}
+.hud .tube{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overflow:visible}
+.tube path{fill:none;stroke-linecap:round}
+.tube-base{stroke:var(--accent);stroke-width:12;opacity:.28}
+.tube-core{stroke:var(--accent-hi);stroke-width:3;filter:drop-shadow(0 0 6px var(--glow))}
+.tube-flow{stroke:var(--orb-ink);stroke-width:3;stroke-dasharray:2 22;opacity:.85;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.orb-text{position:absolute;left:0;top:0;text-align:center;color:var(--orb-ink);text-shadow:0 2px 20px hsl(var(--hue) 90% 3% / .85),0 0 4px hsl(var(--hue) 90% 3% / .6);white-space:nowrap;will-change:transform}
+.orb-label{font:700 clamp(24px,3.4vw,60px)/1 var(--display);letter-spacing:.12em;text-transform:uppercase}
+.orb-meta{margin-top:.55em;font-size:clamp(13px,1.15vw,19px)}
+.orb-text.swap .orb-label,.orb-text.swap .orb-meta{animation:labelIn .4s cubic-bezier(.2,.8,.2,1)}
+@keyframes labelIn{from{opacity:0;filter:blur(6px);transform:scale(.92)}}
+.orb-desc{position:absolute;left:0;top:0;width:86vw;max-width:26em;text-align:center;font-size:clamp(14px,1.3vw,22px);color:var(--ink-dim);will-change:transform}
+
+.app{position:relative;z-index:2;height:100%;display:grid;grid-template-rows:auto 1fr auto;padding:clamp(14px,3.2vh,48px) clamp(18px,4.5vw,84px);gap:clamp(8px,2vh,24px);transition:opacity .8s ease}
+.app.dimmed,.app.booting{opacity:0;pointer-events:none}
+
+.top{display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:.6em;font:700 clamp(16px,1.6vw,26px)/1 var(--display);letter-spacing:.32em}
+.brand-orb{width:1em;height:1em;border-radius:50%;background:var(--orb-grad);box-shadow:0 0 14px var(--glow)}
+.clockbox{text-align:right}
+.clock{font:600 clamp(20px,2.2vw,38px)/1 var(--display);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.date{margin-top:.35em;font-size:clamp(12px,1vw,17px);color:var(--ink-dim)}
+
+.screens{position:relative;min-height:0}
+.screen{position:absolute;top:0;right:0;bottom:0;left:0;opacity:0;visibility:hidden;transition:opacity .3s ease,transform .5s cubic-bezier(.2,.8,.2,1),visibility 0s linear .5s}
+.screen.home{transform:translateX(-50px)}
+.screen.sub{transform:translateX(70px)}
+.screen.active{opacity:1;visibility:visible;transform:none;transition:opacity .4s ease .08s,transform .55s cubic-bezier(.2,.8,.2,1) .04s,visibility 0s}
+
+.home{display:grid;grid-template-columns:minmax(240px,.9fr) 1.25fr;align-items:center;gap:clamp(20px,5vw,96px)}
+.menu{display:flex;flex-direction:column;gap:clamp(10px,1.8vh,22px);align-items:flex-start}
+.orb-space{align-self:stretch;display:grid;place-items:center}
+.css-orb{display:none}
+.no-gl .css-orb{display:block;width:30vw;height:30vw;max-width:44vh;max-height:44vh;border-radius:50%;background:var(--orb-grad);box-shadow:0 0 90px var(--glow),inset -20px -30px 60px hsl(var(--hue) 90% 4% / .55)}
+.capsule{appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;display:flex;align-items:center;gap:.75em;min-width:11em;max-width:100%;padding:.72em 1.4em .72em 1.1em;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 clamp(18px,2.3vw,40px)/1 var(--display);letter-spacing:.08em;text-transform:uppercase;transition:transform .22s cubic-bezier(.2,.8,.2,1),background .2s,color .2s,box-shadow .25s,border-color .2s}
+.capsule .dot{width:.5em;height:.5em;border-radius:50%;background:var(--ink-dim);transition:background .2s,box-shadow .2s}
+.capsule:focus{transform:translateX(14px);background:linear-gradient(100deg,var(--accent) 0%,var(--accent-hi) 100%);color:var(--on-accent);border-color:var(--accent-hi);box-shadow:0 0 0 3px var(--glow),0 10px 40px var(--glow)}
+.capsule:focus .dot{background:var(--on-accent);box-shadow:0 0 10px var(--orb-ink)}
+
+.sub{display:flex;flex-direction:column;gap:clamp(10px,1.8vh,22px)}
+.sub-head{display:flex;align-items:center;gap:clamp(12px,1.4vw,22px)}
+.back{appearance:none;cursor:pointer;outline:none;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:.55em 1.1em;font:600 clamp(13px,1.1vw,18px)/1 var(--display);letter-spacing:.06em;transition:background .2s,color .2s,box-shadow .25s,border-color .2s}
+.back:focus{background:var(--accent-hi);color:var(--on-accent);border-color:var(--accent-hi);box-shadow:0 0 0 3px var(--glow)}
+.crumb{font:500 clamp(13px,1.05vw,17px)/1 var(--display);color:var(--ink-dim)}
+.crumb b{color:var(--ink);font-weight:600}
+.sub-title{font:700 clamp(30px,4.6vw,78px)/1 var(--display);letter-spacing:.06em;text-shadow:0 0 30px var(--glow)}
+.sub-desc{color:var(--ink-dim);font-size:clamp(14px,1.2vw,20px);margin-top:.4em;max-width:44em}
+.panel{flex:1;min-height:0;overflow:auto;padding:clamp(14px,2.2vw,36px);border-radius:clamp(18px,2vw,32px);background:var(--panel);border:1px solid var(--line);scrollbar-width:none}
+.panel::-webkit-scrollbar{display:none}
+.panel.enter [data-nav],.panel.enter .row.static{animation:itemIn .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 30ms + 120ms)}
+@keyframes itemIn{from{opacity:0;transform:translateX(28px)}}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,13vw,230px),1fr));gap:clamp(12px,1.5vw,26px);padding:8px}
+.tile{appearance:none;cursor:pointer;outline:none;position:relative;min-height:176px;border-radius:clamp(16px,1.6vw,26px);border:1px solid var(--line);background:linear-gradient(160deg,var(--panel-hi),var(--panel));display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;padding:clamp(12px,1.2vw,20px);text-align:left;transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .2s}
+.glyph{width:clamp(38px,3.6vw,64px);height:clamp(38px,3.6vw,64px);flex:none;border-radius:50%;display:grid;place-items:center;font:700 clamp(18px,1.8vw,32px)/1 var(--display);color:var(--orb-ink);background:var(--orb-grad);box-shadow:0 0 18px var(--glow)}
+.tile-name{display:block;font:600 clamp(15px,1.35vw,24px)/1.15 var(--display);letter-spacing:.02em}
+.tile-sub{display:block;font-size:clamp(12px,.95vw,16px);color:var(--ink-dim);margin-top:.35em}
+.tile:focus{transform:scale(1.06);border-color:var(--accent-hi);box-shadow:0 0 0 3px var(--glow),0 14px 40px var(--glow);z-index:1}
+.tile.add .glyph{background:none;border:2px dashed var(--accent-hi);color:var(--accent-hi);box-shadow:none}
+
+.list{display:grid;gap:clamp(8px,1vh,14px);padding:6px}
+.list.cols{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.row{appearance:none;cursor:pointer;outline:none;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1em;padding:clamp(12px,1.6vh,20px) clamp(14px,1.4vw,24px);border-radius:clamp(12px,1.2vw,20px);border:1px solid var(--line);background:var(--panel-hi);font:500 clamp(15px,1.3vw,22px)/1.2 var(--body);text-align:left;transition:background .2s,color .2s,box-shadow .25s,border-color .2s}
+.row .k{display:flex;align-items:center;gap:.8em}
+.row .v{font:600 .9em/1 var(--display);letter-spacing:.04em;color:var(--accent-hi);white-space:nowrap}
+.row small{display:block;color:var(--ink-dim);font-size:.72em;margin-top:.3em}
+.row:focus{background:linear-gradient(100deg,var(--accent),var(--accent-hi));color:var(--on-accent);border-color:var(--accent-hi);box-shadow:0 0 0 3px var(--glow)}
+.row:focus .v,.row:focus small{color:var(--on-accent)}
+.row.static{cursor:default}
+.mini-glyph{flex:none;width:2em;height:2em;border-radius:50%;display:grid;place-items:center;font:700 .85em/1 var(--display);color:var(--orb-ink);background:var(--orb-grad)}
+
+.hints{display:flex;justify-content:space-between;align-items:center;gap:1em;flex-wrap:wrap;font-size:clamp(12px,1vw,17px);color:var(--ink-dim)}
+.keys{display:flex;gap:1.6em;flex-wrap:wrap}
+kbd{font:600 1em/1 var(--display);display:inline-grid;place-items:center;min-width:1.9em;height:1.9em;padding:0 .45em;margin-right:.45em;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+kbd.a{background:var(--accent-hi);color:var(--on-accent);border-color:transparent}
+.pad{display:flex;align-items:center;gap:.6em}
+.pad i{width:.6em;height:.6em;border-radius:50%;background:var(--ink-dim)}
+.pad.on i{background:var(--accent-hi);box-shadow:0 0 10px var(--glow)}
+
+/* start gate */
+.gate{position:fixed;top:0;right:0;bottom:0;left:0;z-index:30;cursor:pointer;transition:opacity .9s ease}
+.gate.gone{opacity:0;pointer-events:none}
+.gate-inner{position:absolute;left:0;right:0;top:calc(50% + 20vh);text-align:center}
+.gate-word{font:700 clamp(22px,2.6vw,44px)/1 var(--display);letter-spacing:.9em;padding-left:.9em;opacity:.18;transition:opacity 1.2s ease,letter-spacing 1.8s cubic-bezier(.2,.8,.2,1)}
+.gate-hint{margin-top:2.2em;color:var(--ink-dim);font-size:clamp(14px,1.2vw,20px);animation:hintPulse 2.4s ease-in-out infinite}
+.gate.lit .gate-word{opacity:1;letter-spacing:.42em;padding-left:.42em}
+.gate.lit .gate-hint{opacity:0;animation:none;transition:opacity .3s}
+@keyframes hintPulse{50%{opacity:.35}}
+
+/* overlays */
+.overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:40}
+.overlay[hidden]{display:none}
+.amb{position:absolute;top:0;right:0;bottom:0;left:0;display:grid;align-items:end;justify-items:start;padding:9vh 8vw}
+.amb-orb{display:none}
+.no-gl .amb-orb{display:block;position:absolute;left:50%;top:40%;width:34vw;height:34vw;max-width:46vh;max-height:46vh;margin:0;transform:translate(-50%,-50%);border-radius:50%;background:var(--orb-grad);box-shadow:0 0 120px var(--glow);opacity:.7}
+.amb-inner{position:relative;animation:drift2 120s ease-in-out infinite alternate}
+@keyframes drift2{0%{transform:translate(0,0)}50%{transform:translate(4vw,-3vh)}100%{transform:translate(1vw,-1vh)}}
+.amb-time{font:700 clamp(56px,9vw,160px)/1 var(--display);letter-spacing:.03em;font-variant-numeric:tabular-nums;text-shadow:0 0 40px var(--glow)}
+.amb-date{margin-top:.6em;color:var(--ink-dim);font-size:clamp(15px,1.5vw,26px)}
+.ov-hint{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 4vh);left:0;right:0;text-align:center;color:var(--ink-dim);font-size:clamp(12px,1vw,17px);animation:fadeHint 4s ease forwards}
+@keyframes fadeHint{0%,60%{opacity:1}100%{opacity:0}}
+.test{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--bg-0)}
+.frame{position:absolute;border:2px solid var(--c);border-radius:3px}
+.frame span{position:absolute;top:6px;padding:.3em .6em;border-radius:4px;background:var(--c);color:#0a0a0a;font:600 clamp(11px,1vw,16px)/1 var(--display)}
+.f100{top:0;right:0;bottom:0;left:0;--c:hsl(0 80% 58%)}
+.f100 span{left:8px}
+.f95{top:2.5%;right:2.5%;bottom:2.5%;left:2.5%;--c:hsl(45 95% 55%)}
+.f95 span{left:50%;transform:translateX(-50%)}
+.f90{top:5%;right:5%;bottom:5%;left:5%;--c:hsl(140 70% 50%)}
+.f90 span{right:8px}
+.bars,.ramp{position:absolute;left:12%;right:12%;display:grid}
+.bars{top:16%;height:12vh;grid-template-columns:repeat(7,1fr)}
+.ramp{bottom:16%;height:7vh;grid-template-columns:repeat(11,1fr);border:1px solid var(--line)}
+.cross{position:absolute;left:50%;top:50%;width:12vmin;height:12vmin;transform:translate(-50%,-50%);border:2px solid var(--ink-dim);border-radius:50%}
+.cross::before,.cross::after{content:"";position:absolute;background:var(--ink-dim)}
+.cross::before{left:50%;top:-30%;bottom:-30%;width:2px;transform:translateX(-50%)}
+.cross::after{top:50%;left:-30%;right:-30%;height:2px;transform:translateY(-50%)}
+.test-note{position:absolute;left:10%;right:10%;top:calc(50% + 10vmin);text-align:center;color:var(--ink);font-size:clamp(13px,1.2vw,20px)}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 9vh);transform:translate(-50%,20px);z-index:60;padding:.8em 1.4em;border-radius:999px;background:var(--panel-hi);border:1px solid var(--accent-hi);color:var(--ink);font:600 clamp(14px,1.15vw,19px)/1 var(--display);box-shadow:0 0 30px var(--glow);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s}
+.perf{position:fixed;top:16px;right:16px;z-index:70;max-width:460px;padding:12px 16px;background:rgba(0,0,0,.92);border:1px solid var(--accent-hi);color:#e7ffd1;font:14px/1.45 monospace;white-space:pre-wrap;box-shadow:0 0 22px var(--glow)}
+.perf[hidden]{display:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Xbox-inspired finish: green phosphor, geometric focus blades, and television-safe contrast. */
+body{background:#020601}
+.brand{gap:0;letter-spacing:.2em;color:var(--accent-hi);text-shadow:0 0 18px var(--glow)}
+.brand-orb{margin-right:.6em}
+.app{padding:clamp(54px,5.5vh,72px) clamp(96px,5.5vw,112px)}
+.brand{font-size:clamp(24px,1.6vw,28px)}
+.clock{font-size:clamp(24px,2.2vw,38px)}
+.date,.back,.crumb,.sub-desc,.row,.row .v,.row small,.tile-name,.tile-sub,.hints,.orb-meta,.orb-desc,.gate-hint,.ov-hint,.test-note{font-size:24px}
+.amb-date{font-size:26px}
+.frame span,.toast{font-size:24px}
+.brand-orb{box-shadow:0 0 20px var(--glow),0 0 3px var(--accent-hi)}
+.top{min-height:42px}
+.home{grid-template-columns:minmax(250px,1.05fr) minmax(300px,.95fr);gap:clamp(24px,6vw,110px)}
+.home .orb-space{order:-1}
+.menu{align-items:stretch;gap:0;max-width:660px}
+.menu>*+*{margin-top:clamp(8px,1.3vh,16px)}
+.capsule{position:relative;min-height:clamp(52px,7.4vh,82px);justify-content:flex-start;border:1px solid hsl(var(--hue) 100% 63% / .22);border-radius:2px 18px 2px 18px;padding:.7em 1.2em;background:linear-gradient(95deg,hsl(var(--hue) 88% 12% / .96),hsl(var(--hue) 86% 20% / .82));box-shadow:inset 8px 0 0 hsl(var(--hue) 90% 34% / .7),inset 0 1px 0 hsl(var(--hue) 100% 84% / .14);text-shadow:0 1px 1px #000;clip-path:polygon(0 0,100% 0,96% 100%,0 100%);gap:0}
+.capsule .dot{margin-right:.75em}
+.capsule .dot{flex:none;width:.38em;height:.38em;background:var(--accent-hi);box-shadow:0 0 10px var(--glow)}
+.capsule:focus{transform:translateX(-12px) scale(1.035);border-color:var(--accent-hi);background:linear-gradient(95deg,hsl(var(--hue) 100% 38%),hsl(var(--hue) 100% 55%));color:#071000;box-shadow:0 0 0 2px #c6ff3e,0 0 26px 8px var(--glow),inset 8px 0 0 #d3ff54}
+.capsule:focus .dot{background:#071000;box-shadow:0 0 10px #fff}
+.sub{gap:0}
+.sub>*+*{margin-top:clamp(10px,1.8vh,22px)}
+.sub-head{gap:0}
+.sub-head .crumb{margin-left:clamp(12px,1.4vw,22px)}
+.row .k{gap:0}
+.row .k>*+*{margin-left:.8em}
+.hints{gap:0}
+.hints>*+*{margin-left:1em}
+.keys{gap:0}
+.keys>*+*{margin-left:1.6em}
+.pad{gap:0}
+.pad>*+*{margin-left:.6em}
+.orb-label{text-shadow:0 2px 12px #000,0 0 4px #000;letter-spacing:.08em}
+.orb-desc{color:#c5d9af;text-shadow:0 1px 5px #000}
+.tube-base{stroke:var(--accent-hi);stroke-width:10;opacity:.18}
+.tube-core{stroke:var(--accent-hi);stroke-width:2}
+.sub-title{text-transform:uppercase;color:var(--accent-hi);letter-spacing:.12em}
+.panel{background:linear-gradient(145deg,rgba(9,25,5,.96),rgba(3,10,2,.96));border:1px solid hsl(var(--hue) 84% 52% / .42);border-radius:4px 22px 4px 22px;box-shadow:inset 0 1px 0 rgba(219,255,177,.08),0 14px 50px rgba(0,0,0,.4)}
+.row,.tile{background:linear-gradient(120deg,rgba(25,54,13,.88),rgba(8,23,4,.96));border-color:hsl(var(--hue) 84% 52% / .36);border-radius:3px 14px 3px 14px}
+.row:focus,.tile:focus,.back:focus{outline:2px solid #d4ff55;outline-offset:2px;box-shadow:0 0 0 2px #071000,0 0 24px 8px var(--glow)}
+.back{border-radius:2px 12px 2px 12px;background:rgba(15,36,7,.96)}
+.gate-word{color:var(--accent-hi);text-shadow:0 0 24px var(--glow);letter-spacing:.42em}
+.gate-hint,.hints{color:#b4ce99}
+
+/* The UI remains legible on webOS engines that predate newer CSS conveniences. */
+@supports not (font-size: clamp(1px, 2px, 3px)){
+  .app{padding:56px 96px;gap:16px}
+  .brand{font-size:24px}.clock{font-size:34px}.date{font-size:24px}
+  .brand-orb{width:24px;height:24px;margin-right:10px}
+  .home{gap:70px}.menu{gap:0}.menu>*+*{margin-top:12px}
+  .capsule{font-size:32px;padding:22px 36px;min-width:330px;min-height:72px;gap:0}.capsule .dot{margin-right:20px}
+  .back{font-size:24px}.sub{gap:0}.sub>*+*{margin-top:16px}.sub-head{gap:0}.sub-head .crumb{margin-left:14px}
+  .crumb{font-size:24px}.sub-title{font-size:66px}.sub-desc{font-size:24px}.panel{padding:26px;border-radius:20px}
+  .grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;padding:8px}
+  .row{font-size:24px;padding:16px 20px;border-radius:14px}.row .v,.row small{font-size:24px}.list{gap:12px}
+  .tile{min-height:176px;padding:18px;border-radius:18px}.tile-name,.tile-sub{font-size:24px}
+  .glyph{width:52px;height:52px;font-size:26px}
+  .hints{font-size:24px;gap:20px}.keys{gap:0}.keys>*+*{margin-left:22px}.pad{gap:0}.pad>*+*{margin-left:8px}
+  .orb-label{font-size:54px}.orb-meta{font-size:24px}.orb-desc{font-size:24px}
+  .gate-word{font-size:40px}.gate-hint{font-size:24px}
+  .amb-time{font-size:144px}.amb-date{font-size:26px}.ov-hint,.test-note,.frame span,.toast{font-size:24px}
+}
+
+@media (max-width:760px),(max-aspect-ratio:1/1){
+  .home{grid-template-columns:1fr;grid-template-rows:38% 1fr;gap:2vh}
+  .orb-space{order:-1}
+  .hud .tube{display:none}
+  .menu{align-items:stretch;align-self:start}
+  .capsule:focus{transform:none}
+  .screen{overflow:auto}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<div class="hud" id="hud" aria-hidden="true">
+  <svg class="tube" id="tube"><path class="tube-base"/><path class="tube-core"/><path class="tube-flow"/></svg>
+  <div class="orb-text" id="orbText"><div class="orb-label" id="orbLabel">Apps</div><div class="orb-meta" id="orbMeta"></div></div>
+  <p class="orb-desc" id="orbDesc"></p>
+</div>
+
+<div class="app booting" id="app">
+  <header class="top">
+    <div class="brand"><span class="brand-orb" aria-hidden="true"></span>XBOX</div>
+    <div class="clockbox"><div class="clock" id="clock">--:--</div><div class="date" id="date"></div></div>
+  </header>
+
+  <main class="screens" id="screens">
+    <section class="screen home active" id="home" aria-label="Home">
+      <nav class="menu" id="menu" aria-label="Main menu">
+        <button class="capsule" data-nav data-go="apps" data-label="Apps" data-desc="Launch your streaming apps"><span class="dot"></span>Apps</button>
+        <button class="capsule" data-nav data-go="media" data-label="Media" data-desc="Ambient mode, soundscape and a screen test"><span class="dot"></span>Media</button>
+        <button class="capsule" data-nav data-go="store" data-label="Store" data-desc="Add or remove apps from your dashboard"><span class="dot"></span>Store</button>
+        <button class="capsule" data-nav data-go="settings" data-label="Settings" data-desc="Accent color, theme, sound and visual quality"><span class="dot"></span>Settings</button>
+        <button class="capsule" data-nav data-go="system" data-label="System" data-desc="Display, input and build info"><span class="dot"></span>System</button>
+      </nav>
+      <div class="orb-space" id="orbSpace"><div class="css-orb" id="cssOrb"></div></div>
+    </section>
+    <section class="screen sub" id="apps" aria-label="Apps"></section>
+    <section class="screen sub" id="media" aria-label="Media"></section>
+    <section class="screen sub" id="store" aria-label="Store"></section>
+    <section class="screen sub" id="settings" aria-label="Settings"></section>
+    <section class="screen sub" id="system" aria-label="System"></section>
+  </main>
+
+  <footer class="hints">
+    <div class="keys">
+      <span><kbd>↑↓←→</kbd>Move</span>
+      <span><kbd class="a">A</kbd><kbd>Enter</kbd>Select</span>
+      <span><kbd>B</kbd><kbd>Esc</kbd>Back</span>
+    </div>
+    <div class="pad" id="padStatus"><i></i><span>Keyboard or remote</span></div>
+  </footer>
+</div>
+
+<div class="gate" id="gate"><div class="gate-inner"><div class="gate-word">XBOX</div><div class="gate-hint">Press any button to start</div></div></div>
+<div class="overlay" id="overlay" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="perf" id="perf" hidden aria-live="polite"></div>
+
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const KEY = 'verdant-dashboard-v1';
+const BUILD = 'Xbox Dashboard 1.0';
+
+const ACCENTS = {
+  verdant: { name: 'Verdant', hue: 115 },
+  cyan:    { name: 'Cyan',    hue: 182 },
+  amber:   { name: 'Amber',   hue: 38 },
+  violet:  { name: 'Violet',  hue: 272 },
+  crimson: { name: 'Crimson', hue: 352 }
+};
+
+// Edit this list to change what the Store offers. url = what opens on launch.
+const CATALOG = [
+  { id: 'youtube',     name: 'YouTube',     cat: 'Video',          url: 'https://www.youtube.com/tv' },
+  { id: 'netflix',     name: 'Netflix',     cat: 'Movies and TV',  url: 'https://www.netflix.com' },
+  { id: 'twitch',      name: 'Twitch',      cat: 'Live streams',   url: 'https://www.twitch.tv' },
+  { id: 'spotify',     name: 'Spotify',     cat: 'Music',          url: 'https://open.spotify.com' },
+  { id: 'plex',        name: 'Plex',        cat: 'Your media',     url: 'https://app.plex.tv' },
+  { id: 'disney',      name: 'Disney+',     cat: 'Movies and TV',  url: 'https://www.disneyplus.com' },
+  { id: 'hbomax',      name: 'HBO Max',     cat: 'Movies and TV',  url: 'https://www.hbomax.com' },
+  { id: 'prime',       name: 'Prime Video', cat: 'Movies and TV',  url: 'https://www.primevideo.com' },
+  { id: 'hulu',        name: 'Hulu',        cat: 'Movies and TV',  url: 'https://www.hulu.com' },
+  { id: 'peacock',     name: 'Peacock',     cat: 'Sports and TV',  url: 'https://www.peacocktv.com' },
+  { id: 'espn',        name: 'ESPN',        cat: 'Sports',         url: 'https://www.espn.com/watch/' },
+  { id: 'crunchyroll', name: 'Crunchyroll', cat: 'Anime',          url: 'https://www.crunchyroll.com' },
+  { id: 'pluto',       name: 'Pluto TV',    cat: 'Free live TV',   url: 'https://pluto.tv' },
+  { id: 'tubi',        name: 'Tubi',        cat: 'Free movies',    url: 'https://tubitv.com' }
+];
+
+const DEFAULTS = { apps: ['youtube', 'netflix', 'spotify', 'twitch', 'plex'], accent: 'verdant', theme: 'dark', sound: 'all', clock: '12', quality: 'high' };
+const fresh = () => JSON.parse(JSON.stringify(DEFAULTS));
+function load() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  const st = fresh();
+  if (s && typeof s === 'object') for (const k in DEFAULTS) if (k in s) st[k] = s[k];
+  if (st.sound === true) st.sound = 'all';
+  if (st.sound === false) st.sound = 'off';
+  if (!['all', 'fx', 'off'].includes(st.sound)) st.sound = 'all';
+  if (!['high', 'balanced', 'low'].includes(st.quality)) st.quality = 'high';
+  if (!Array.isArray(st.apps)) st.apps = [...DEFAULTS.apps];
+  st.apps = st.apps.filter(id => CATALOG.some(c => c.id === id));
+  if (!ACCENTS[st.accent]) st.accent = 'verdant';
+  return st;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+let state = load();
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const SETTINGS = [
+  { key: 'accent', label: 'Accent color', hint: 'The glow color across the dashboard', opts: Object.keys(ACCENTS), names: Object.keys(ACCENTS).reduce((out, k) => { out[k] = ACCENTS[k].name; return out; }, {}) },
+  { key: 'theme', label: 'Theme', hint: 'Dark is the intended look', opts: ['dark', 'light', 'auto'], names: { dark: 'Dark', light: 'Light', auto: 'Match device' } },
+  { key: 'sound', label: 'Sound', hint: 'Interface effects and the background hum', opts: ['all', 'fx', 'off'], names: { all: 'Effects and hum', fx: 'Effects only', off: 'Off' } },
+  { key: 'quality', label: 'Visual quality', hint: 'Lower this on slower TV boxes', opts: ['high', 'balanced', 'low'], names: { high: 'High', balanced: 'Balanced', low: 'Low' } },
+  { key: 'clock', label: 'Clock', hint: 'Time format in the top corner', opts: ['12', '24'], names: { '12': '12-hour', '24': '24-hour' } }
+];
+
+const hue = () => ACCENTS[state.accent].hue;
+const isDark = () => state.theme === 'dark' || (state.theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+function applyLook() {
+  const r = document.documentElement;
+  if (state.theme === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', state.theme);
+  r.style.setProperty('--hue', hue());
+  applyGL();
+}
+
+/* =========================================================
+   AUDIO — everything synthesized, routed through a reverb
+   ========================================================= */
+let actx = null, master = null, fxBus = null, verb = null, noiseBuf = null, hum = null, drone = null;
+function ac() {
+  try {
+    if (!actx) {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      const comp = actx.createDynamicsCompressor();
+      master = actx.createGain(); master.gain.value = .9;
+      master.connect(comp).connect(actx.destination);
+      verb = actx.createConvolver(); verb.buffer = impulse(3, 2.4);
+      const vg = actx.createGain(); vg.gain.value = .34;
+      verb.connect(vg).connect(master);
+      fxBus = actx.createGain();
+      fxBus.connect(master); fxBus.connect(verb);
+      const len = actx.sampleRate * 2;
+      noiseBuf = actx.createBuffer(1, len, actx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if (actx.state === 'suspended') actx.resume();
+  } catch (e) { return null; }
+  return actx;
+}
+function impulse(sec, decay) {
+  const len = Math.floor(actx.sampleRate * sec), b = actx.createBuffer(2, len, actx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = b.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+  }
+  return b;
+}
+function osc(f1, f2, dur, o = {}) {
+  const { type = 'sine', vol = .06, delay = 0, attack = .01, out = fxBus } = o;
+  const t = actx.currentTime + delay;
+  const n = actx.createOscillator(), g = actx.createGain();
+  n.type = type;
+  n.frequency.setValueAtTime(f1, t);
+  if (f2 !== f1) n.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  n.connect(g).connect(out);
+  n.start(t); n.stop(t + dur + .05);
+}
+function noise(dur, o = {}) {
+  const { f1 = 800, f2 = 2400, q = 1, vol = .2, delay = 0, attack = .02, type = 'bandpass' } = o;
+  const t = actx.currentTime + delay;
+  const s = actx.createBufferSource(); s.buffer = noiseBuf;
+  const f = actx.createBiquadFilter(); f.type = type; f.Q.value = q;
+  f.frequency.setValueAtTime(f1, t);
+  f.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(f).connect(g).connect(fxBus);
+  s.start(t, Math.random() * 1.5); s.stop(t + dur + .05);
+}
+function sfx(k) {
+  if (state.sound === 'off' || !ac()) return;
+  switch (k) {
+    case 'move':
+      osc(1900, 1500, .06, { vol: .028 });
+      noise(.05, { f1: 5200, f2: 3000, q: 2, vol: .03, attack: .003 });
+      break;
+    case 'select':
+      noise(.34, { f1: 280, f2: 3400, q: 1.3, vol: .16, attack: .07 });
+      osc(659.3, 659.3, .55, { type: 'triangle', vol: .045, delay: .13 });
+      osc(987.8, 987.8, .7, { vol: .035, delay: .19 });
+      break;
+    case 'back':
+      noise(.32, { f1: 3000, f2: 240, q: 1.3, vol: .14, attack: .04 });
+      osc(440, 220, .32, { type: 'triangle', vol: .04, delay: .05 });
+      break;
+    case 'install':
+      osc(784, 784, .35, { vol: .05 });
+      osc(1175, 1175, .45, { vol: .04, delay: .09 });
+      osc(1568, 1568, .6, { vol: .03, delay: .18 });
+      break;
+    case 'edge':
+      osc(110, 70, .14, { vol: .08 });
+      break;
+  }
+}
+function igniteSound() {
+  if (state.sound === 'off' || !ac()) return;
+  const c = actx, t = c.currentTime;
+  // low swell
+  const sub = c.createOscillator(), sg = c.createGain();
+  sub.frequency.setValueAtTime(36, t); sub.frequency.exponentialRampToValueAtTime(55, t + 1.15);
+  sg.gain.setValueAtTime(0.0001, t); sg.gain.exponentialRampToValueAtTime(.22, t + 1.1); sg.gain.exponentialRampToValueAtTime(0.0001, t + 3.4);
+  sub.connect(sg).connect(master); sub.start(t); sub.stop(t + 3.5);
+  // rising air
+  noise(1.15, { f1: 140, f2: 4400, q: .9, vol: .11, attack: 1.0 });
+  // chord through an opening filter
+  const f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 6;
+  f.frequency.setValueAtTime(180, t); f.frequency.exponentialRampToValueAtTime(3400, t + 1.25); f.frequency.exponentialRampToValueAtTime(480, t + 4.4);
+  const pg = c.createGain();
+  pg.gain.setValueAtTime(0.0001, t); pg.gain.exponentialRampToValueAtTime(.06, t + 1.2); pg.gain.exponentialRampToValueAtTime(0.0001, t + 4.6);
+  f.connect(pg); pg.connect(master); pg.connect(verb);
+  [110, 164.8, 246.9, 329.6].forEach((fr, i) => {
+    const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.detune.value = i % 2 ? 7 : -7;
+    o.connect(f); o.start(t); o.stop(t + 4.7);
+  });
+  // ignition hit
+  osc(150, 38, .7, { vol: .3, delay: 1.15, attack: .005, out: master });
+  noise(.55, { f1: 3200, f2: 280, q: .7, vol: .17, delay: 1.15, attack: .005 });
+  // shimmer tail
+  [1318.5, 1975.5, 2637].forEach((fr, i) => osc(fr, fr, 2.4, { vol: .016, delay: 1.25 + i * .13, attack: .4 }));
+}
+function startHum() {
+  if (state.sound !== 'all' || hum || !ac()) return;
+  const c = actx, g = c.createGain(); g.gain.value = 0.0001;
+  const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 340;
+  const nodes = [];
+  [55, 55.35, 110.2].forEach((fr, i) => {
+    const o = c.createOscillator(); o.type = i === 2 ? 'triangle' : 'sine'; o.frequency.value = fr;
+    o.connect(f); o.start(); nodes.push(o);
+  });
+  const lfo = c.createOscillator(), lg = c.createGain();
+  lfo.frequency.value = .11; lg.gain.value = .006;
+  lfo.connect(lg).connect(g.gain); lfo.start(); nodes.push(lfo);
+  f.connect(g).connect(master);
+  g.gain.setTargetAtTime(.02, c.currentTime, 2);
+  hum = { g, nodes };
+}
+function stopHum() {
+  if (!hum) return;
+  const h = hum; hum = null;
+  h.g.gain.setTargetAtTime(0.0001, actx.currentTime, .5);
+  setTimeout(() => h.nodes.forEach(n => { try { n.stop(); } catch (e) {} }), 3000);
+}
+function toggleDrone() {
+  if (!ac()) return false;
+  const c = actx;
+  if (drone) {
+    const d = drone; drone = null;
+    d.g.gain.setTargetAtTime(0.0001, c.currentTime, .5);
+    setTimeout(() => d.nodes.forEach(n => { try { n.stop(); } catch (e) {} }), 3000);
+    return false;
+  }
+  const g = c.createGain(); g.gain.value = 0.0001;
+  const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 600; f.Q.value = 4;
+  const lfo = c.createOscillator(), lg = c.createGain();
+  lfo.frequency.value = .07; lg.gain.value = 350;
+  lfo.connect(lg).connect(f.frequency);
+  const nodes = [lfo];
+  [55, 82.4, 110.3, 164.8].forEach((fr, i) => {
+    const o = c.createOscillator(); o.type = i % 2 ? 'sawtooth' : 'triangle';
+    o.frequency.value = fr; o.detune.value = (i - 1.5) * 6;
+    o.connect(f); o.start(); nodes.push(o);
+  });
+  f.connect(g); g.connect(master); g.connect(verb);
+  lfo.start();
+  g.gain.setTargetAtTime(.05, c.currentTime, 1.2);
+  drone = { g, nodes };
+  return true;
+}
+
+/* =========================================================
+   3D SCENE
+   ========================================================= */
+const NOISE = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0);
+  const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy));
+  vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz);
+  vec3 l=1.0-g;
+  vec3 i1=min(g.xyz,l.zxy);
+  vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx;
+  vec3 x2=x0-i2+C.yyy;
+  vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857;
+  vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z);
+  vec4 x_=floor(j*ns.z);
+  vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy;
+  vec4 y=y_*ns.x+ns.yyyy;
+  vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy);
+  vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0;
+  vec4 s1=floor(b1)*2.0+1.0;
+  vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+  vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x);
+  vec3 p1=vec3(a0.zw,h.y);
+  vec3 p2=vec3(a1.xy,h.z);
+  vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
+  m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+
+let GL = null;
+const CAM_Z = 10;
+function radialTexture(size, stops) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  stops.forEach(([p, a]) => gr.addColorStop(p, `rgba(255,255,255,${a})`));
+  g.fillStyle = gr; g.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(c);
+  return tex;
+}
+const QUALITY = { high: { pr: 1.5, parts: 2400, oct: 5, seg: 96 }, balanced: { pr: 1, parts: 1400, oct: 4, seg: 72 }, low: { pr: .7, parts: 600, oct: 3, seg: 48 } };
+
+function initGL() {
+  if (!window.THREE) return null;
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: true, alpha: false, powerPreference: 'high-performance' });
+  } catch (e) { return null; }
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x000000, .032);
+  const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, .1, 200);
+  camera.position.set(0, 0, 13);
+
+  // background nebula — a full-screen quad drawn behind everything
+  const bgMat = new THREE.ShaderMaterial({
+    depthTest: false, depthWrite: false,
+    uniforms: {
+      uTime: { value: 0 }, uAspect: { value: 1 }, uOct: { value: 5 }, uLight: { value: 0 },
+      uFlash: { value: 0 }, uGlow: { value: 1 }, uOrb: { value: new THREE.Vector2() },
+      uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uC: { value: new THREE.Color() },
+      uL: { value: new THREE.Color() }, uL2: { value: new THREE.Color() }
+    },
+    vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.999,1.0); }`,
+    fragmentShader: `
+      uniform float uTime,uAspect,uOct,uLight,uFlash,uGlow; uniform vec2 uOrb;
+      uniform vec3 uA,uB,uC,uL,uL2; varying vec2 vUv;
+      ${NOISE}
+      float fbm(vec3 p){ float a=.5,s=0.0; for(int i=0;i<5;i++){ if(float(i)>=uOct) break; s+=a*snoise(p); p*=2.03; a*=.5; } return s; }
+      void main(){
+        vec2 p=(vUv-.5)*vec2(uAspect,1.0);
+        float t=uTime*.025;
+        vec3 q=vec3(p*1.3,t);
+        vec2 warp=vec2(fbm(q+vec3(0.0,0.0,t)),fbm(q+vec3(5.2,1.3,-t)));
+        float w=fbm(vec3(p*1.3+warp*.9,t*.7));
+        float clouds=smoothstep(-.35,.75,w);
+        float fil=1.0-smoothstep(0.0,.045,abs(fbm(vec3(p*2.4+warp*.5,t*1.3))));
+        vec2 vp=p-uOrb; float og=exp(-dot(vp,vp)*3.0);
+        float vig=smoothstep(1.3,.2,length(p*vec2(.85,1.15)));
+        vec3 dark=uA+uB*clouds*.55+uC*fil*.1*(.4+clouds)+uC*og*.12*uGlow+uC*uFlash*.35*vig;
+        dark*=mix(.28,1.0,vig);
+        vec3 light=mix(uL,uL2,clouds*.7)+uC*fil*.04+uC*uFlash*.15;
+        light*=mix(.9,1.0,vig);
+        vec3 col=mix(dark,light,uLight);
+        vec2 gp=p*vec2(18.0,12.0)+warp*.18;
+        vec2 gf=fract(gp);
+        float gd=min(min(gf.x,1.0-gf.x),min(gf.y,1.0-gf.y));
+        float grid=1.0-smoothstep(0.0,0.018,gd);
+        col+=uC*grid*mix(.12,.018,uLight)*(0.45+clouds*.55);
+        col+=(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)/255.0;
+        gl_FragColor=vec4(col,1.0);
+      }`
+  });
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+  bg.frustumCulled = false; bg.renderOrder = -10;
+  scene.add(bg);
+
+  // orb
+  const orbGroup = new THREE.Group(); scene.add(orbGroup);
+  const orbMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 }, uPulse: { value: 0 }, uDim: { value: 1 },
+      uDeep: { value: new THREE.Color() }, uMid: { value: new THREE.Color() }, uHi: { value: new THREE.Color() }
+    },
+    vertexShader: `
+      uniform float uTime,uPulse; varying vec3 vN,vV,vP;
+      ${NOISE}
+      void main(){
+        float d=snoise(position*1.8+vec3(uTime*.35))*.035*(1.0+uPulse*2.0);
+        vec3 pos=position+normal*d;
+        vP=position;
+        vN=normalize(normalMatrix*normal);
+        vec4 mv=modelViewMatrix*vec4(pos,1.0);
+        vV=-mv.xyz;
+        gl_Position=projectionMatrix*mv;
+      }`,
+    fragmentShader: `
+      uniform float uTime,uPulse,uDim; uniform vec3 uDeep,uMid,uHi; varying vec3 vN,vV,vP;
+      ${NOISE}
+      void main(){
+        vec3 N=normalize(vN), V=normalize(vV);
+        float facing=max(dot(N,V),0.0);
+        float fr=pow(1.0-facing,2.2);
+        float n1=snoise(vP*1.6+vec3(0.0,uTime*.25,uTime*.1));
+        float n2=snoise(vP*3.4-vec3(uTime*.2,0.0,uTime*.15));
+        float plasma=smoothstep(-.3,.9,n1*.65+n2*.35);
+        vec3 col=mix(uDeep,uMid,plasma);
+        col+=uHi*pow(facing,3.0)*.5*(.6+.4*n2);
+        col+=uHi*fr*1.5;
+        col+=uHi*(1.0-smoothstep(0.0,.06,abs(n1)))*.35;
+        col*=1.0+uPulse*.9;
+        gl_FragColor=vec4(col*uDim,1.0);
+      }`
+  });
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), orbMat);
+  orbGroup.add(sphere);
+
+  const haloTex = radialTexture(256, [[0, 1], [.25, .45], [.55, .12], [1, 0]]);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  halo.scale.setScalar(4.6); orbGroup.add(halo);
+  const halo2 = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  halo2.scale.setScalar(9); orbGroup.add(halo2);
+
+  const ringGroup = new THREE.Group(); orbGroup.add(ringGroup);
+  const ringMat = () => new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+  const rings = [
+    new THREE.Mesh(new THREE.TorusGeometry(1.42, .006, 8, 200), ringMat()),
+    new THREE.Mesh(new THREE.TorusGeometry(1.62, .004, 8, 200), ringMat()),
+    new THREE.Mesh(new THREE.TorusGeometry(1.9, .003, 8, 200), ringMat())
+  ];
+  rings[0].rotation.x = 1.2; rings[1].rotation.set(.4, .9, 0); rings[2].rotation.set(1.5, -.3, .2);
+  rings.forEach(r => ringGroup.add(r));
+
+  const dotTex = radialTexture(64, [[0, 1], [.35, .55], [1, 0]]);
+  const moteGeo = new THREE.BufferGeometry();
+  const mp = new Float32Array(260 * 3);
+  for (let i = 0; i < 260; i++) {
+    const r = 1.25 + Math.random() * .8, th = Math.random() * Math.PI * 2, ph = Math.acos(Math.random() * 2 - 1);
+    mp[i * 3] = r * Math.sin(ph) * Math.cos(th); mp[i * 3 + 1] = r * Math.cos(ph) * .55; mp[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+  }
+  moteGeo.setAttribute('position', new THREE.BufferAttribute(mp, 3));
+  const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ size: .05, map: dotTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+  orbGroup.add(motes);
+
+  const shock = new THREE.Mesh(new THREE.RingGeometry(.97, 1, 160), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+  orbGroup.add(shock);
+
+  // deep particle field
+  const field = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ size: .09, map: dotTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(field);
+
+  return { renderer, scene, camera, bgMat, orbGroup, orbMat, sphere, halo, halo2, ringGroup, rings, motes, shock, field, fieldVel: null, haloOpacity: .55 };
+}
+
+function buildField() {
+  if (!GL) return;
+  const n = Math.round(QUALITY[state.quality].parts * (reduced ? .4 : 1));
+  const pos = new Float32Array(n * 3), vel = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    pos[i * 3] = (Math.random() - .5) * 64;
+    pos[i * 3 + 1] = (Math.random() - .5) * 38;
+    pos[i * 3 + 2] = -45 + Math.random() * 50;
+    vel[i] = .08 + Math.random() * .3;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  GL.field.geometry.dispose();
+  GL.field.geometry = g;
+  GL.fieldVel = vel;
+}
+function applyQuality() {
+  if (!GL) return;
+  const q = QUALITY[state.quality];
+  GL.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, q.pr));
+  GL.bgMat.uniforms.uOct.value = q.oct;
+  GL.sphere.geometry.dispose();
+  GL.sphere.geometry = new THREE.SphereGeometry(1, q.seg, q.seg);
+  buildField();
+  resize();
+}
+function applyGL() {
+  if (!GL) return;
+  const h = hue() / 360, dark = isDark();
+  const C = (s, l) => new THREE.Color().setHSL(h, s, l);
+  const u = GL.orbMat.uniforms;
+  u.uDeep.value.copy(C(.85, .05)); u.uMid.value.copy(C(.9, .3)); u.uHi.value.copy(C(1, .62));
+  const b = GL.bgMat.uniforms;
+  b.uA.value.copy(C(.7, .03)); b.uB.value.copy(C(.85, .15)); b.uC.value.copy(C(1, .55));
+  b.uL.value.copy(C(.35, .93)); b.uL2.value.copy(C(.45, .8)); b.uLight.value = dark ? 0 : 1;
+  GL.scene.fog.color.copy(dark ? C(.7, .03) : C(.35, .9));
+  const blend = dark ? THREE.AdditiveBlending : THREE.NormalBlending;
+  [GL.halo, GL.halo2].forEach(s => { s.material.color.copy(dark ? C(1, .55) : C(.8, .38)); s.material.blending = blend; s.material.needsUpdate = true; });
+  GL.haloOpacity = dark ? .55 : .3;
+  GL.rings.forEach(r => { r.material.color.copy(dark ? C(1, .66) : C(.8, .28)); r.material.blending = blend; r.material.needsUpdate = true; });
+  [GL.motes, GL.field].forEach(p => { p.material.color.copy(dark ? C(1, .66) : C(.7, .3)); p.material.blending = blend; p.material.needsUpdate = true; });
+  GL.shock.material.color.copy(dark ? C(1, .72) : C(.8, .35));
+}
+
+/* =========================================================
+   CLOCK, TOAST
+   ========================================================= */
+function fmtTime(d) {
+  let h = d.getHours(); const m = String(d.getMinutes()).padStart(2, '0');
+  if (state.clock === '24') return `${String(h).padStart(2, '0')}:${m}`;
+  const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  return `${h}:${m} ${ap}`;
+}
+const fmtDate = d => d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+function tick() {
+  const d = new Date();
+  $('#clock').textContent = fmtTime(d);
+  $('#date').textContent = fmtDate(d);
+  const a = $('#ambTime');
+  if (a) { a.textContent = fmtTime(d); $('#ambDate').textContent = fmtDate(d); }
+}
+setInterval(tick, 1000);
+let toastT;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* =========================================================
+   SCREENS
+   ========================================================= */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const appById = id => CATALOG.find(c => c.id === id);
+const TITLES = { apps: 'Apps', media: 'Media', store: 'Store', settings: 'Settings', system: 'System' };
+const DESCS = {
+  apps: 'Your installed apps. Pick one to open it.',
+  media: 'An ambient screensaver, a generative soundscape and a test pattern for checking your TV’s picture.',
+  store: 'Add or remove apps. Changes show up in Apps right away.',
+  settings: 'Press select on a setting to cycle through its options.',
+  system: 'What this dashboard sees about your screen and controllers.'
+};
+function connectedPads() {
+  try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(Boolean); } catch (e) { return []; }
+}
+function shell(id, body) {
+  return `<div class="sub-head"><button class="back" data-nav data-action="back">◀ Back</button><div class="crumb">Home <span aria-hidden="true">›</span> <b>${TITLES[id]}</b></div></div>
+  <div><h2 class="sub-title">${TITLES[id]}</h2><p class="sub-desc">${DESCS[id]}</p></div>
+  <div class="panel enter">${body}</div>`;
+}
+function mediaTile(mode, g, name, sub) {
+  return `<button class="tile" data-nav data-action="media" data-mode="${mode}"><span class="glyph">${g}</span><span><span class="tile-name">${name}</span><span class="tile-sub"${mode === 'drone' ? ' id="droneSub"' : ''}>${sub}</span></span></button>`;
+}
+const RENDER = {
+  apps() {
+    const tiles = state.apps.map(id => {
+      const a = appById(id);
+      return `<button class="tile" data-nav data-action="launch" data-id="${a.id}"><span class="glyph">${esc(a.name[0])}</span><span><span class="tile-name">${esc(a.name)}</span><span class="tile-sub">${esc(a.cat)}</span></span></button>`;
+    }).join('');
+    return `<div class="grid">${tiles}<button class="tile add" data-nav data-go="store"><span class="glyph">+</span><span><span class="tile-name">Get more apps</span><span class="tile-sub">Opens the Store</span></span></button></div>`;
+  },
+  media() {
+    return `<div class="grid">
+      ${mediaTile('ambient', '◐', 'Ambient mode', 'Big clock and a drifting orb')}
+      ${mediaTile('drone', '≈', 'Soundscape', drone ? 'Playing' : 'Off')}
+      ${mediaTile('test', '▣', 'Screen test', 'Check overscan and color')}
+    </div>`;
+  },
+  store() {
+    return `<div class="list cols">${CATALOG.map(a => {
+      const on = state.apps.includes(a.id);
+      return `<button class="row" data-nav data-action="install" data-id="${a.id}"><span class="k"><span class="mini-glyph">${esc(a.name[0])}</span><span>${esc(a.name)}<small>${esc(a.cat)}</small></span></span><span class="v">${on ? 'Installed ✓' : 'Add +'}</span></button>`;
+    }).join('')}</div>`;
+  },
+  settings() {
+    return `<div class="list">${SETTINGS.map(s =>
+      `<button class="row" data-nav data-action="setting" data-key="${s.key}"><span class="k"><span>${s.label}<small>${s.hint}</small></span></span><span class="v">${s.names[String(state[s.key])]}</span></button>`
+    ).join('')}<button class="row" data-nav data-action="reset"><span class="k"><span>Reset dashboard<small>Restore the default apps and settings</small></span></span><span class="v">Reset</span></button></div>`;
+  },
+  system() {
+    const pads = connectedPads();
+    let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+    const rows = [
+      ['Time zone', tz || 'Unknown'],
+      ['Display', `${innerWidth} × ${innerHeight} at ${devicePixelRatio || 1}× scale`],
+      ['Renderer', GL ? `WebGL, ${SETTINGS[3].names[state.quality].toLowerCase()} quality` : 'Basic (WebGL unavailable)'],
+      ['Input', pads.length ? pads.map(p => p.id.split('(')[0].trim() || 'Controller').join(', ') : 'Keyboard or remote'],
+      ['Apps installed', `${state.apps.length} of ${CATALOG.length}`],
+      ['Build', BUILD]
+    ];
+    return `<div class="list">${rows.map(([k, v]) => `<div class="row static"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('')}</div>`;
+  }
+};
+
+let stack = ['home'];
+const memo = {};
+const cur = () => stack[stack.length - 1];
+const activeScreen = () => $('#' + cur());
+const navItems = (root = activeScreen()) => $$('[data-nav]', root);
+let homeIdx = 0;
+
+function show(id, focusIndex) {
+  if (id !== 'home') {
+    const el = $('#' + id);
+    el.innerHTML = shell(id, RENDER[id]());
+    $$('.panel [data-nav], .panel .row.static', el).forEach((n, i) => n.style.setProperty('--i', Math.min(i, 14)));
+    setTimeout(() => { const p = $('.panel', el); if (p) p.classList.remove('enter'); }, 1200);
+  }
+  $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  const items = navItems($('#' + id));
+  const i = focusIndex != null ? focusIndex : (id === 'home' ? 0 : 1);
+  const t = items[Math.max(0, Math.min(i, items.length - 1))];
+  requestAnimationFrame(() => { if (t) t.focus({ preventScroll: true }); });
+}
+function go(id) {
+  memo[cur()] = navItems().indexOf(document.activeElement);
+  stack.push(id);
+  sfx('select'); kick(1);
+  show(id);
+}
+function back() {
+  if (stack.length <= 1) return false;
+  stack.pop();
+  sfx('back'); kick(.5);
+  show(cur(), memo[cur()]);
+  return true;
+}
+
+function moveFocus(dir) {
+  const items = navItems(); if (!items.length) return;
+  const el0 = document.activeElement;
+  if (!items.includes(el0)) { items[0].focus(); return; }
+  const r = el0.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let best = null, bs = Infinity;
+  for (const el of items) {
+    if (el === el0) continue;
+    const b = el.getBoundingClientRect();
+    const dx = b.left + b.width / 2 - cx, dy = b.top + b.height / 2 - cy;
+    let main, cross;
+    if (dir === 'up') { main = -dy; cross = Math.abs(dx); }
+    else if (dir === 'down') { main = dy; cross = Math.abs(dx); }
+    else if (dir === 'left') { main = -dx; cross = Math.abs(dy); }
+    else { main = dx; cross = Math.abs(dy); }
+    if (main <= 4) continue;
+    const s = main + cross * 2.5;
+    if (s < bs) { bs = s; best = el; }
+  }
+  if (best) { best.focus(); best.scrollIntoView({ block: 'nearest', inline: 'nearest' }); sfx('move'); }
+  else sfx('edge');
+}
+
+/* orb label on home */
+const META = {
+  apps: () => `${state.apps.length} installed`,
+  media: () => drone ? 'Soundscape playing' : '3 tools',
+  store: () => `${CATALOG.length - state.apps.length} available`,
+  settings: () => `${ACCENTS[state.accent].name} theme`,
+  system: () => BUILD
+};
+function updateOrb(b) {
+  if (!b || !b.classList.contains('capsule')) return;
+  homeIdx = $$('.capsule').indexOf(b);
+  $('#orbLabel').textContent = 'XBOX';
+  $('#orbDesc').textContent = b.dataset.desc;
+  $('#orbMeta').textContent = META[b.dataset.go]();
+  const ot = $('#orbText'); ot.classList.remove('swap'); void ot.offsetWidth; ot.classList.add('swap');
+  S.pulse = Math.max(S.pulse, .3);
+}
+$('#menu').addEventListener('focusin', e => updateOrb(e.target.closest('.capsule')));
+
+/* =========================================================
+   ANIMATION STATE + LOOP
+   ========================================================= */
+const S = { x: 0, y: 0, z: 0, s: .01, dim: .3, rot: 0, tilt: .3, pulse: 0, kick: 0, flash: 0, ringBoost: 0, shockT: -1, camZ: 13 };
+let phase = 'gate', bootStart = 0;
+const ptr = { x: 0, y: 0, sx: 0, sy: 0 };
+addEventListener('pointermove', e => { ptr.x = e.clientX / innerWidth * 2 - 1; ptr.y = e.clientY / innerHeight * 2 - 1; });
+
+function kick(power) {
+  S.pulse = Math.max(S.pulse, power);
+  S.kick = Math.max(S.kick, power);
+  S.shockT = 0;
+}
+function metrics() {
+  const halfH = Math.tan(GL.camera.fov * Math.PI / 360) * CAM_Z;
+  return { halfH, halfW: halfH * GL.camera.aspect, narrow: innerWidth <= 760 || innerWidth <= innerHeight };
+}
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+function target(t) {
+  const { halfH, halfW, narrow } = metrics();
+  const homeS = narrow ? Math.min(halfW * .3, halfH * .2) : Math.min(halfH * .4, halfW * .22);
+  if (phase === 'gate') return { x: 0, y: 0, z: 0, s: halfH * .12 * (1 + Math.sin(t * 1.6) * .04), dim: .5, camZ: 13 };
+  if (phase === 'booting') {
+    const e = (performance.now() - bootStart) / 1000;
+    return { x: 0, y: 0, z: 0, s: halfH * (.12 + .18 * ease(e / 1.15)), dim: .55 + .45 * ease(e / 1.1), camZ: 13 - 3 * ease((e - 1.1) / 1.4) };
+  }
+  if (overlayMode === 'ambient') return { x: Math.sin(t * .045) * halfW * .3, y: Math.cos(t * .037) * halfH * .16 + halfH * .1, z: 0, s: halfH * .34, dim: 1, camZ: CAM_Z };
+  if (cur() === 'home') return narrow ? { x: 0, y: halfH * .44, z: 0, s: homeS, dim: 1, camZ: CAM_Z } : { x: -halfW * .36, y: -halfH * .02, z: 0, s: homeS, dim: 1, camZ: CAM_Z };
+  return narrow ? { x: 0, y: halfH * .3, z: -7, s: homeS * 1.2, dim: .5, camZ: CAM_Z + .4 } : { x: halfW * .6, y: halfH * .05, z: -6, s: homeS * 1.25, dim: .5, camZ: CAM_Z + .4 };
+}
+
+let last = performance.now();
+const perfSamples = {};
+window.__verdantPerf = perfSamples;
+let perfFrameCount = 0;
+function perfKey() { return `${state.quality}:${overlayMode ? 'overlay' : cur()}`; }
+function quantile(values, q) {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * q))];
+}
+function perfSummary(name) {
+  const xs = perfSamples[name] || [];
+  const avg = xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+  return `${name}: avg ${avg.toFixed(2)} ms | 1% low ${quantile(xs, .99).toFixed(2)} ms (${xs.length} frames)`;
+}
+function updatePerf(dt) {
+  const name = perfKey();
+  if (!perfSamples[name]) perfSamples[name] = [];
+  const xs = perfSamples[name]; xs.push(dt * 1000); if (xs.length > 3600) xs.shift();
+  perfFrameCount++;
+  if ($('#perf').hidden || perfFrameCount % 30) return;
+  $('#perf').textContent = `FRAME TIME  [F to hide]\n${perfSummary(name)}\n\nSESSION\n${Object.keys(perfSamples).sort().map(perfSummary).join('\n')}`;
+}
+function togglePerf() {
+  const box = $('#perf'); box.hidden = !box.hidden;
+  if (!box.hidden) box.textContent = `FRAME TIME  [F to hide]\n${perfSummary(perfKey())}\n\nSESSION\n${Object.keys(perfSamples).sort().map(perfSummary).join('\n') || 'Collecting frames…'}`;
+}
+function frame(now) {
+  requestAnimationFrame(frame);
+  const rawDt = (now - last) / 1000;
+  const dt = Math.min(.05, rawDt); last = now;
+  const t = now / 1000 * (reduced ? .25 : 1);
+  if (phase === 'booting' && now - bootStart > 2400) finishBoot();
+  if (GL) renderGL(t, dt);
+  updateHud();
+  updatePerf(rawDt);
+}
+
+function renderGL(t, dt) {
+  const tg = target(t);
+  const k = 1 - Math.pow(.004, dt), kf = 1 - Math.pow(.0005, dt);
+  S.x += (tg.x - S.x) * k; S.y += (tg.y - S.y) * k; S.z += (tg.z - S.z) * k;
+  S.s += (tg.s - S.s) * (phase === 'ready' ? k : kf);
+  S.dim += (tg.dim - S.dim) * k;
+  S.camZ += (tg.camZ - S.camZ) * k;
+  S.rot += (homeIdx * 1.15 - S.rot) * k * .8;
+  S.tilt += ((.25 + homeIdx * .12) - S.tilt) * k * .6;
+  S.pulse *= Math.pow(.03, dt); S.kick *= Math.pow(.02, dt); S.flash *= Math.pow(.05, dt); S.ringBoost *= Math.pow(.15, dt);
+  ptr.sx += (ptr.x - ptr.sx) * k * .5; ptr.sy += (ptr.y - ptr.sy) * k * .5;
+
+  const { orbGroup, sphere, orbMat, halo, halo2, ringGroup, rings, motes, shock, camera, bgMat, field, fieldVel } = GL;
+  orbGroup.position.set(S.x, S.y, S.z);
+  orbGroup.scale.setScalar(Math.max(S.s, .001));
+  sphere.rotation.y = S.rot + t * .12;
+  sphere.scale.setScalar(1 + S.pulse * .1);
+  orbMat.uniforms.uTime.value = t;
+  orbMat.uniforms.uPulse.value = S.pulse;
+  orbMat.uniforms.uDim.value = S.dim;
+  halo.material.opacity = GL.haloOpacity * S.dim * (1 + S.pulse * .6);
+  halo2.material.opacity = GL.haloOpacity * .35 * S.dim;
+  const spin = 1 + S.ringBoost * 6;
+  ringGroup.rotation.x = S.tilt; ringGroup.rotation.y += dt * .08 * spin;
+  rings[0].rotation.z += dt * .25 * spin; rings[1].rotation.z -= dt * .18 * spin; rings[2].rotation.z += dt * .1 * spin;
+  rings.forEach((r, i) => r.material.opacity = (.55 - i * .12) * S.dim);
+  motes.rotation.y += dt * (.15 + S.ringBoost);
+  motes.material.opacity = .8 * S.dim;
+  if (S.shockT >= 0) {
+    S.shockT += dt / .75;
+    const p = S.shockT;
+    if (p >= 1) { S.shockT = -1; shock.material.opacity = 0; }
+    else { shock.scale.setScalar(1.05 + ease(p) * 2.8); shock.material.opacity = Math.pow(1 - p, 2) * .8 * Math.max(S.dim, .6); shock.lookAt(camera.position); }
+  }
+
+  const par = reduced ? 0 : 1;
+  const cx = ptr.sx * .45 * par, cy = -ptr.sy * .28 * par - (phase === 'ready' && cur() === 'home' ? (homeIdx - 2) * .1 : 0);
+  camera.position.x += (cx - camera.position.x) * k;
+  camera.position.y += (cy - camera.position.y) * k;
+  camera.position.z = S.camZ;
+  camera.lookAt(S.x * .06, S.y * .06, 0);
+  const fov = 45 - S.kick * 2.2;
+  if (Math.abs(camera.fov - fov) > .001) { camera.fov = fov; camera.updateProjectionMatrix(); }
+
+  if (fieldVel) {
+    const a = field.geometry.attributes.position, arr = a.array, sp = reduced ? .2 : 1;
+    for (let i = 0, n = fieldVel.length; i < n; i++) {
+      let y = arr[i * 3 + 1] + fieldVel[i] * dt * sp;
+      if (y > 19) { y = -19; arr[i * 3] = (Math.random() - .5) * 64; }
+      arr[i * 3 + 1] = y;
+    }
+    a.needsUpdate = true;
+    field.rotation.y = Math.sin(t * .03) * .08;
+  }
+  field.material.opacity = .75;
+
+  const v = orbGroup.position.clone().project(camera);
+  bgMat.uniforms.uTime.value = t;
+  bgMat.uniforms.uAspect.value = camera.aspect;
+  bgMat.uniforms.uOrb.value.set(v.x * .5 * camera.aspect, v.y * .5);
+  bgMat.uniforms.uFlash.value = S.flash;
+  bgMat.uniforms.uGlow.value = S.dim;
+
+  GL.renderer.render(GL.scene, camera);
+}
+
+function orbScreen() {
+  if (GL) {
+    const c = GL.camera, v = new THREE.Vector3(S.x, S.y, S.z).project(c);
+    const dist = c.position.distanceTo(GL.orbGroup.position);
+    const r = S.s / (dist * Math.tan(c.fov * Math.PI / 360)) * innerHeight / 2;
+    return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight, r };
+  }
+  const b = $('#cssOrb').getBoundingClientRect();
+  return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 };
+}
+const hud = $('#hud'), orbText = $('#orbText'), orbDesc = $('#orbDesc'), tubePaths = $$('#tube path');
+function updateHud() {
+  const on = phase === 'ready' && cur() === 'home' && !overlayMode;
+  hud.classList.toggle('on', on);
+  if (!on) return;
+  const o = orbScreen();
+  orbText.style.transform = `translate(${o.x}px,${o.y}px) translate(-50%,-50%)`;
+  orbDesc.style.transform = `translate(${o.x}px,${o.y + o.r * 1.32}px) translate(-50%,0)`;
+  const f = document.activeElement;
+  if (f && f.classList && f.classList.contains('capsule')) {
+    const fr = f.getBoundingClientRect();
+    const x1 = fr.right - 6, y1 = fr.top + fr.height / 2;
+    const x2 = o.x - o.r * .92, y2 = o.y;
+    const mx = x1 + (x2 - x1) * .5;
+    const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${mx.toFixed(1)} ${y1.toFixed(1)} ${mx.toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+    tubePaths.forEach(p => p.setAttribute('d', d));
+  }
+}
+
+function resize() {
+  if (!GL) return;
+  GL.renderer.setSize(innerWidth, innerHeight, false);
+  GL.camera.aspect = innerWidth / innerHeight;
+  GL.camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+function startBoot() {
+  if (phase !== 'gate') return;
+  ac();
+  phase = 'booting'; bootStart = performance.now();
+  $('#gate').classList.add('lit');
+  igniteSound();
+  S.ringBoost = 1;
+  setTimeout(() => { if (phase === 'booting') { S.pulse = 1.6; S.flash = 1; S.ringBoost = 1.4; S.shockT = 0; } }, 1150);
+}
+function finishBoot() {
+  if (phase === 'ready') return;
+  if (phase === 'booting' && performance.now() - bootStart < 1150) { S.pulse = 1.2; S.flash = .6; S.shockT = 0; }
+  phase = 'ready';
+  $('#gate').classList.add('gone');
+  setTimeout(() => { const g = $('#gate'); if (g) g.remove(); }, 1000);
+  $('#app').classList.remove('booting');
+  startHum();
+  show('home', homeIdx);
+}
+
+/* =========================================================
+   OVERLAYS
+   ========================================================= */
+let overlayMode = null;
+function openOverlay(m) {
+  sfx('select');
+  const ov = $('#overlay');
+  overlayMode = m;
+  if (m === 'ambient') {
+    ov.innerHTML = `<div class="amb"><div class="amb-orb"></div><div class="amb-inner"><div class="amb-time" id="ambTime"></div><div class="amb-date" id="ambDate"></div></div></div><div class="ov-hint">Press any button to return</div>`;
+  } else {
+    const bars = ['#c0c0c0', '#c0c000', '#00c0c0', '#00c000', '#c000c0', '#c00000', '#0000c0'].map(c => `<i style="background:${c}"></i>`).join('');
+    const ramp = Array.from({ length: 11 }, (_, i) => `<i style="background:hsl(0 0% ${i * 10}%)"></i>`).join('');
+    ov.innerHTML = `<div class="test"><div class="bars">${bars}</div><div class="ramp">${ramp}</div>
+      <div class="frame f100"><span>Full frame</span></div><div class="frame f95"><span>Action safe 95%</span></div><div class="frame f90"><span>Title safe 90%</span></div>
+      <div class="cross"></div>
+      <p class="test-note">If the red frame is cut off, your TV is overscanning. Turn on Just Scan, Screen Fit or 1:1 Pixel in its picture settings. All 11 gray steps should be distinct.</p></div>
+      <div class="ov-hint">Press any button to return</div>`;
+  }
+  ov.hidden = false;
+  $('#app').classList.add('dimmed');
+  tick();
+}
+function closeOverlay() {
+  const ov = $('#overlay');
+  ov.hidden = true; ov.innerHTML = ''; overlayMode = null;
+  $('#app').classList.remove('dimmed');
+  sfx('back');
+}
+
+/* =========================================================
+   ACTIONS + INPUT
+   ========================================================= */
+function act(el) {
+  ac();
+  if (el.dataset.go) { go(el.dataset.go); return; }
+  const a = el.dataset.action;
+  if (a === 'back') back();
+  else if (a === 'launch') {
+    const ap = appById(el.dataset.id);
+    sfx('select'); kick(.8); toast(`Opening ${ap.name}…`);
+    try { window.open(ap.url, '_blank', 'noopener'); } catch (e) {}
+  }
+  else if (a === 'install') {
+    const id = el.dataset.id, ap = appById(id), i = state.apps.indexOf(id);
+    if (i >= 0) { state.apps.splice(i, 1); toast(`Removed ${ap.name}`); sfx('back'); }
+    else { state.apps.push(id); toast(`Added ${ap.name} to Apps`); sfx('install'); S.pulse = Math.max(S.pulse, .6); }
+    save();
+    $('.v', el).textContent = state.apps.includes(id) ? 'Installed ✓' : 'Add +';
+  }
+  else if (a === 'setting') {
+    const s = SETTINGS.find(x => x.key === el.dataset.key);
+    const i = s.opts.indexOf(state[s.key]);
+    state[s.key] = s.opts[(i + 1) % s.opts.length];
+    save(); applyLook();
+    if (s.key === 'quality') applyQuality();
+    if (s.key === 'clock') tick();
+    if (s.key === 'sound') { if (state.sound === 'all') startHum(); else stopHum(); }
+    $('.v', el).textContent = s.names[String(state[s.key])];
+    sfx('select'); S.pulse = Math.max(S.pulse, .5);
+  }
+  else if (a === 'reset') {
+    if (el.dataset.armed) {
+      const idx = navItems().indexOf(el);
+      state = fresh(); save(); applyLook(); applyQuality(); tick(); startHum();
+      toast('Dashboard reset'); sfx('back'); kick(1);
+      show('settings', idx);
+    } else {
+      el.dataset.armed = '1';
+      $('.v', el).textContent = 'Press again to confirm';
+      sfx('edge');
+      el.addEventListener('blur', () => { delete el.dataset.armed; const v = $('.v', el); if (v) v.textContent = 'Reset'; }, { once: true });
+    }
+  }
+  else if (a === 'media') {
+    const m = el.dataset.mode;
+    if (m === 'drone') {
+      const on = toggleDrone();
+      const sub = $('#droneSub'); if (sub) sub.textContent = on ? 'Playing' : 'Off';
+      toast(on ? 'Soundscape on' : 'Soundscape off');
+      S.pulse = Math.max(S.pulse, .6);
+    } else openOverlay(m);
+  }
+}
+
+function input(type, dir) {
+  ac();
+  if (phase === 'gate') { startBoot(); return; }
+  if (phase === 'booting') { finishBoot(); return; }
+  if (overlayMode) { closeOverlay(); return; }
+  if (type === 'move') moveFocus(dir);
+  else if (type === 'select') {
+    const el = document.activeElement;
+    if (el && el.matches && el.matches('[data-nav]')) act(el);
+    else { const it = navItems()[0]; if (it) it.focus(); }
+  }
+  else if (type === 'back') { if (!back()) sfx('edge'); }
+}
+
+const KEYMAP = { ArrowUp: ['move', 'up'], ArrowDown: ['move', 'down'], ArrowLeft: ['move', 'left'], ArrowRight: ['move', 'right'], Enter: ['select'], ' ': ['select'], Escape: ['back'], Backspace: ['back'], GoBack: ['back'], BrowserBack: ['back'] };
+addEventListener('keydown', e => {
+  if (e.key === 'f' || e.key === 'F') { e.preventDefault(); togglePerf(); return; }
+  let m = KEYMAP[e.key];
+  if (!m && (e.keyCode === 461 || e.keyCode === 10009)) m = ['back']; // LG webOS / Samsung Tizen remote back
+  if (!m) return;
+  e.preventDefault();
+  if (e.repeat && m[0] !== 'move') return;
+  input(m[0], m[1]);
+});
+addEventListener('keyup', e => { if (e.key === ' ') e.preventDefault(); });
+document.addEventListener('click', e => {
+  if (phase !== 'ready' || overlayMode) { input('any'); return; }
+  const el = e.target.closest('[data-nav]');
+  if (el && activeScreen().contains(el)) act(el);
+});
+document.addEventListener('mousemove', e => {
+  if (overlayMode || phase !== 'ready') return;
+  const el = e.target.closest('[data-nav]');
+  if (el && el !== document.activeElement && activeScreen().contains(el)) { el.focus({ preventScroll: true }); sfx('move'); }
+});
+
+const prev = { a: false, b: false };
+let rep = { dir: null, next: 0 };
+function pollPads(t) {
+  try {
+    let dir = null, a = false, b = false, any = false;
+    for (const p of connectedPads()) {
+      const btn = i => p.buttons[i] && p.buttons[i].pressed;
+      const ax = p.axes[0] || 0, ay = p.axes[1] || 0;
+      if (btn(12) || ay < -.55) dir = 'up';
+      else if (btn(13) || ay > .55) dir = 'down';
+      else if (btn(14) || ax < -.55) dir = 'left';
+      else if (btn(15) || ax > .55) dir = 'right';
+      a = a || btn(0); b = b || btn(1);
+      any = any || p.buttons.some(x => x && x.pressed);
+    }
+    if (phase !== 'ready' && any && !prev.any) input('any');
+    else {
+      if (dir) {
+        if (rep.dir !== dir) { rep = { dir, next: t + 380 }; input('move', dir); }
+        else if (t >= rep.next) { rep.next = t + 130; input('move', dir); }
+      } else rep.dir = null;
+      if (a && !prev.a) input('select');
+      if (b && !prev.b) input('back');
+    }
+    prev.a = a; prev.b = b; prev.any = any;
+  } catch (e) {}
+  requestAnimationFrame(pollPads);
+}
+function updatePadStatus() {
+  const n = connectedPads().length, el = $('#padStatus');
+  el.classList.toggle('on', n > 0);
+  $('span', el).textContent = n ? 'Controller connected' : 'Keyboard or remote';
+}
+addEventListener('gamepadconnected', () => { updatePadStatus(); if (phase === 'ready') { toast('Controller connected'); sfx('install'); } });
+addEventListener('gamepaddisconnected', () => { updatePadStatus(); toast('Controller disconnected'); });
+
+/* =========================================================
+   START
+   ========================================================= */
+GL = initGL();
+if (!GL) {
+  document.documentElement.classList.add('no-gl');
+  phase = 'ready';
+  $('#gate').remove();
+  $('#app').classList.remove('booting');
+}
+applyLook();
+if (GL) applyQuality();
+tick();
+updatePadStatus();
+requestAnimationFrame(frame);
+requestAnimationFrame(pollPads);
+show('home');
+})();
+</script>
+</body>
+</html>

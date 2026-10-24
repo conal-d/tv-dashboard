@@ -3,10 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Xbox TV Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Xbox Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{
@@ -64,8 +61,8 @@
 
 *,*::before,*::after{box-sizing:border-box}
 *{margin:0}
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{height:100%;background:var(--bg-0);scroll-padding-top:env(safe-area-inset-top,0px)}
+:root{box-sizing:border-box}
+html{height:100%;background:var(--bg-0)}
 body{height:100%;overflow:hidden;color:var(--ink);background:radial-gradient(120% 90% at 68% 46%,var(--bg-1) 0%,var(--bg-0) 62%);font-family:var(--body);-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit}
 #gl{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;display:block;z-index:0}
@@ -172,7 +169,7 @@ kbd.a{background:var(--accent-hi);color:var(--on-accent);border-color:transparen
 @keyframes drift2{0%{transform:translate(0,0)}50%{transform:translate(4vw,-3vh)}100%{transform:translate(1vw,-1vh)}}
 .amb-time{font:700 clamp(56px,9vw,160px)/1 var(--display);letter-spacing:.03em;font-variant-numeric:tabular-nums;text-shadow:0 0 40px var(--glow)}
 .amb-date{margin-top:.6em;color:var(--ink-dim);font-size:clamp(15px,1.5vw,26px)}
-.ov-hint{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 4vh);left:0;right:0;text-align:center;color:var(--ink-dim);font-size:clamp(12px,1vw,17px);animation:fadeHint 4s ease forwards}
+.ov-hint{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:var(--ink-dim);font-size:clamp(12px,1vw,17px);animation:fadeHint 4s ease forwards}
 @keyframes fadeHint{0%,60%{opacity:1}100%{opacity:0}}
 .test{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--bg-0)}
 .frame{position:absolute;border:2px solid var(--c);border-radius:3px}
@@ -192,7 +189,7 @@ kbd.a{background:var(--accent-hi);color:var(--on-accent);border-color:transparen
 .cross::after{top:50%;left:-30%;right:-30%;height:2px;transform:translateY(-50%)}
 .test-note{position:absolute;left:10%;right:10%;top:calc(50% + 10vmin);text-align:center;color:var(--ink);font-size:clamp(13px,1.2vw,20px)}
 
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 9vh);transform:translate(-50%,20px);z-index:60;padding:.8em 1.4em;border-radius:999px;background:var(--panel-hi);border:1px solid var(--accent-hi);color:var(--ink);font:600 clamp(14px,1.15vw,19px)/1 var(--display);box-shadow:0 0 30px var(--glow);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s}
+.toast{position:fixed;left:50%;bottom:9vh;transform:translate(-50%,20px);z-index:60;padding:.8em 1.4em;border-radius:999px;background:var(--panel-hi);border:1px solid var(--accent-hi);color:var(--ink);font:600 clamp(14px,1.15vw,19px)/1 var(--display);box-shadow:0 0 30px var(--glow);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s}
 .perf{position:fixed;top:16px;right:16px;z-index:70;max-width:460px;padding:12px 16px;background:rgba(0,0,0,.92);border:1px solid var(--accent-hi);color:#e7ffd1;font:14px/1.45 monospace;white-space:pre-wrap;box-shadow:0 0 22px var(--glow)}
 .perf[hidden]{display:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -272,6 +269,64 @@ body{background:#020601}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* Original Xbox dashboard recreation: one phosphor-green field, one orb, four blades. */
+:root{--hue:115;--accent:#107c10;--accent-hi:#7bdb22;--orb-ink:#d8ffbd;--ink:#edf8e8;--ink-dim:#a2bd95;--line:rgba(155,231,116,.3);--panel:rgba(5,31,7,.78);--panel-hi:rgba(9,49,10,.92);--glow:rgba(76,255,19,.5);--orb-deep:#031104;--on-accent:#061300;--display:Arial,Verdana,sans-serif;--body:Arial,Verdana,sans-serif;color-scheme:dark}
+html,body{background:#010501}
+body{background:#010501;font-family:Arial,Verdana,sans-serif}
+#gl{filter:none}
+.app{grid-template-rows:1fr;padding:5vh 5.5vw;gap:0}
+.top,.hints{display:none}
+.screens{height:100%;width:100%}
+.home{grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:0;align-items:center}
+.home:after{content:"Ⓐ   SELECT";position:absolute;right:4vw;bottom:1.5vh;color:#b2d697;font:400 22px/1 Arial,Verdana,sans-serif;letter-spacing:.08em;text-shadow:0 1px 5px #000;pointer-events:none}
+.home .orb-space{order:-1;min-width:0}
+.menu{align-items:stretch;justify-self:stretch;max-width:780px;gap:0}
+.menu>*+*{margin-top:1.2vh}
+.capsule{position:relative;min-height:8.6vh;max-height:94px;min-width:0;width:100%;justify-content:flex-start;padding:0 0 0 3.2vw;border:0;border-radius:0;background:linear-gradient(90deg,rgba(12,75,8,.82),rgba(7,43,7,.54) 76%,rgba(5,28,5,.24));color:#e9f8e5;text-shadow:0 1px 3px #001500;box-shadow:inset 6px 0 0 rgba(84,190,37,.66),inset 0 1px 0 rgba(215,255,190,.14);clip-path:polygon(0 0,100% 0,95% 100%,0 100%);font:400 clamp(27px,2.55vw,48px)/1 Arial,Verdana,sans-serif;letter-spacing:.015em;text-transform:none;transition:transform .24s ease,background .25s ease,color .25s ease,box-shadow .25s ease}
+.capsule .dot{display:none}
+.capsule:focus{transform:translateX(-1.2vw) scale(1.025);background:linear-gradient(90deg,#a5c844,#d5e86a 72%,#a9c748);color:#11220a;border:0;box-shadow:inset 7px 0 0 #f1f6b4,0 0 26px rgba(152,223,45,.4);outline:2px solid rgba(229,255,163,.95);outline-offset:2px;text-shadow:0 1px rgba(255,255,255,.38)}
+.capsule:focus .dot{display:none}
+.brand{display:none}
+.clockbox{display:none}
+.hud .tube,.orb-desc,.orb-label,.orb-meta{display:none}
+.orb-text{display:grid;place-items:center;width:calc(var(--orb-diameter,40vh) * .4);height:calc(var(--orb-diameter,40vh) * .4);white-space:normal;pointer-events:none}
+.xbox-mark{width:100%;height:100%;overflow:visible;fill:#e4ffd0;filter:drop-shadow(0 0 3px rgba(238,255,213,.95)) drop-shadow(0 0 9px rgba(145,255,89,.92));opacity:.94}
+.xbox-mark .mark-cut{display:none}
+.gate{background:transparent}
+.gate-inner{top:auto;bottom:8vh}
+.gate-word{display:none}
+.gate-hint{margin:0;color:rgba(213,242,201,.76);font:400 22px/1 Arial,Verdana,sans-serif;letter-spacing:.02em;text-shadow:0 1px 8px #000;animation:hintPulse 2.4s ease-in-out infinite}
+.gate-emblem{position:absolute;left:50%;top:50%;width:18vw;height:18vw;max-width:18vh;max-height:18vh;transform:translate(-50%,-50%);display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 38% 30%,#dcffbe 0,#45bf12 12%,#08730a 46%,#031106 78%);box-shadow:0 0 9px #8aff50,0 0 42px rgba(47,255,22,.54),inset -10px -16px 24px rgba(0,0,0,.7);animation:gatePulse 3.4s ease-in-out infinite}
+.gate-emblem svg{width:42%;height:42%;fill:#e7ffd8;filter:drop-shadow(0 0 4px #d7ffbf)}
+@keyframes gatePulse{50%{box-shadow:0 0 12px #a4ff72,0 0 58px rgba(53,255,16,.66),inset -10px -16px 24px rgba(0,0,0,.7);transform:translate(-50%,-50%) scale(1.035)}}
+.gate.lit .gate-emblem{animation:gateIgnite 1.6s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes gateIgnite{to{opacity:0;transform:translate(-50%,-50%) scale(7)}}
+.home .menu:before{content:"";position:absolute;left:0;right:0;top:5%;bottom:5%;pointer-events:none;z-index:-1}
+.sub{padding:1vh 0}
+.sub-head .back{border-radius:0;background:rgba(5,45,7,.84);font:400 24px/1 Arial,Verdana,sans-serif}
+.sub-title{font:400 clamp(44px,4vw,72px)/1 Arial,Verdana,sans-serif;letter-spacing:.02em;text-transform:none;color:#c8f0b0;text-shadow:0 0 22px rgba(70,255,32,.42)}
+.sub-desc{color:#b5d2a6}
+.panel{background:linear-gradient(120deg,rgba(4,28,6,.92),rgba(2,13,3,.95));border:1px solid rgba(93,192,56,.38);border-radius:2px 22px 2px 22px;box-shadow:inset 0 1px 0 rgba(230,255,217,.08)}
+.row,.tile{background:linear-gradient(110deg,rgba(15,59,12,.9),rgba(4,23,5,.94));border-color:rgba(132,213,91,.34);border-radius:2px 12px 2px 12px}
+.row:focus,.tile:focus,.back:focus{background:linear-gradient(90deg,#a5c844,#d5e86a);color:#11220a;outline:2px solid rgba(229,255,163,.95);outline-offset:2px;box-shadow:0 0 22px rgba(152,223,45,.45)}
+.row:focus .v,.row:focus small{color:#182608}
+.toast{border-radius:3px;background:#173916;color:#efffe8}
+.perf{font:18px/1.45 monospace}
+.amb{background:radial-gradient(ellipse at 48% 42%,rgba(18,115,12,.2),transparent 55%),#010501}
+.amb-time{font-family:Arial,Verdana,sans-serif;color:#dcf3d0}
+.test{background:#010501}
+@media(max-width:760px),(max-aspect-ratio:1/1){
+  .app{padding:4vh 6vw}
+  .home{grid-template-columns:1fr;grid-template-rows:42% 58%;align-items:center;gap:0}
+  .home:after{right:2vw;bottom:1vh;font-size:18px}
+  .home .orb-space{order:-1}
+  .menu{align-self:start;width:100%;max-width:none}
+  .capsule{min-height:8vh;padding-left:6vw;font-size:clamp(23px,5vw,34px)}
+  .capsule:focus{transform:translateX(-1vw) scale(1.01)}
+  .orb-text{width:21vw;height:21vw;max-width:16vh;max-height:16vh}
+  .screen{overflow:auto}
+}
 </style>
 </head>
 <body>
@@ -279,8 +334,12 @@ body{background:#020601}
 
 <div class="hud" id="hud" aria-hidden="true">
   <svg class="tube" id="tube"><path class="tube-base"/><path class="tube-core"/><path class="tube-flow"/></svg>
-  <div class="orb-text" id="orbText"><div class="orb-label" id="orbLabel">Apps</div><div class="orb-meta" id="orbMeta"></div></div>
-  <p class="orb-desc" id="orbDesc"></p>
+  <div class="orb-text" id="orbText" aria-label="Xbox orb">
+    <svg class="xbox-mark" viewBox="0 0 100 100" role="img" aria-label="Xbox">
+      <path d="M17 16c10-9 24-9 33 1 9-10 23-10 33-1-4 17-13 27-24 34 11 7 20 17 24 34-10 9-24 9-33-1-9 10-23 10-33 1 4-17 13-27 24-34C30 43 21 33 17 16Z"/>
+      <path class="mark-cut" d="M24 21c8-4 16-3 26 10 10-13 18-14 26-10-6 11-13 19-23 26 10 7 17 15 23 26-8 4-16 3-26-10-10 13-18 14-26 10 6-11 13-19 23-26-10-7-17-15-23-26Z"/>
+    </svg>
+  </div>
 </div>
 
 <div class="app booting" id="app">
@@ -292,11 +351,10 @@ body{background:#020601}
   <main class="screens" id="screens">
     <section class="screen home active" id="home" aria-label="Home">
       <nav class="menu" id="menu" aria-label="Main menu">
-        <button class="capsule" data-nav data-go="apps" data-label="Apps" data-desc="Launch your streaming apps"><span class="dot"></span>Apps</button>
-        <button class="capsule" data-nav data-go="media" data-label="Media" data-desc="Ambient mode, soundscape and a screen test"><span class="dot"></span>Media</button>
-        <button class="capsule" data-nav data-go="store" data-label="Store" data-desc="Add or remove apps from your dashboard"><span class="dot"></span>Store</button>
-        <button class="capsule" data-nav data-go="settings" data-label="Settings" data-desc="Accent color, theme, sound and visual quality"><span class="dot"></span>Settings</button>
-        <button class="capsule" data-nav data-go="system" data-label="System" data-desc="Display, input and build info"><span class="dot"></span>System</button>
+        <button class="capsule" data-nav data-go="apps" data-label="Memory" data-desc="Installed applications and storage"><span class="dot"></span>Memory</button>
+        <button class="capsule" data-nav data-go="media" data-label="Music" data-desc="Music, ambient mode and display test"><span class="dot"></span>Music</button>
+        <button class="capsule" data-nav data-go="store" data-label="Xbox Live" data-desc="Streaming services and available apps"><span class="dot"></span>Xbox Live</button>
+        <button class="capsule" data-nav data-go="settings" data-label="Settings" data-desc="Console preferences and system information"><span class="dot"></span>Settings</button>
       </nav>
       <div class="orb-space" id="orbSpace"><div class="css-orb" id="cssOrb"></div></div>
     </section>
@@ -308,16 +366,16 @@ body{background:#020601}
   </main>
 
   <footer class="hints">
-    <div class="keys">
-      <span><kbd>↑↓←→</kbd>Move</span>
+  <div class="keys">
+      <span><kbd>↑↓</kbd>Move</span>
       <span><kbd class="a">A</kbd><kbd>Enter</kbd>Select</span>
       <span><kbd>B</kbd><kbd>Esc</kbd>Back</span>
     </div>
-    <div class="pad" id="padStatus"><i></i><span>Keyboard or remote</span></div>
+    <div class="pad" id="padStatus"><i></i><span>Controller</span></div>
   </footer>
 </div>
 
-<div class="gate" id="gate"><div class="gate-inner"><div class="gate-word">XBOX</div><div class="gate-hint">Press any button to start</div></div></div>
+<div class="gate" id="gate"><div class="gate-emblem" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M17 16c10-9 24-9 33 1 9-10 23-10 33-1-4 17-13 27-24 34 11 7 20 17 24 34-10 9-24 9-33-1-9 10-23 10-33-1 4-17 13-27 24-34C30 43 21 33 17 16Z"/></svg></div><div class="gate-inner"><div class="gate-word">XBOX</div><div class="gate-hint">Press any button to start</div></div></div>
 <div class="overlay" id="overlay" hidden></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="perf" id="perf" hidden aria-live="polite"></div>
@@ -326,8 +384,8 @@ body{background:#020601}
 (() => {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const KEY = 'verdant-dashboard-v1';
-const BUILD = 'Xbox Dashboard 1.0';
+const KEY = 'xbox-dashboard-v1';
+const BUILD = 'Xbox Dashboard';
 
 const ACCENTS = {
   verdant: { name: 'Verdant', hue: 115 },
@@ -376,15 +434,12 @@ let state = load();
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const SETTINGS = [
-  { key: 'accent', label: 'Accent color', hint: 'The glow color across the dashboard', opts: Object.keys(ACCENTS), names: Object.keys(ACCENTS).reduce((out, k) => { out[k] = ACCENTS[k].name; return out; }, {}) },
-  { key: 'theme', label: 'Theme', hint: 'Dark is the intended look', opts: ['dark', 'light', 'auto'], names: { dark: 'Dark', light: 'Light', auto: 'Match device' } },
   { key: 'sound', label: 'Sound', hint: 'Interface effects and the background hum', opts: ['all', 'fx', 'off'], names: { all: 'Effects and hum', fx: 'Effects only', off: 'Off' } },
-  { key: 'quality', label: 'Visual quality', hint: 'Lower this on slower TV boxes', opts: ['high', 'balanced', 'low'], names: { high: 'High', balanced: 'Balanced', low: 'Low' } },
-  { key: 'clock', label: 'Clock', hint: 'Time format in the top corner', opts: ['12', '24'], names: { '12': '12-hour', '24': '24-hour' } }
+  { key: 'quality', label: 'Visual quality', hint: 'Lower this on slower TV boxes', opts: ['high', 'balanced', 'low'], names: { high: 'High', balanced: 'Balanced', low: 'Low' } }
 ];
 
-const hue = () => ACCENTS[state.accent].hue;
-const isDark = () => state.theme === 'dark' || (state.theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+const hue = () => 115;
+const isDark = () => true;
 function applyLook() {
   const r = document.documentElement;
   if (state.theme === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', state.theme);
@@ -456,17 +511,17 @@ function sfx(k) {
   if (state.sound === 'off' || !ac()) return;
   switch (k) {
     case 'move':
-      osc(1900, 1500, .06, { vol: .028 });
-      noise(.05, { f1: 5200, f2: 3000, q: 2, vol: .03, attack: .003 });
+      osc(290, 170, .12, { type: 'triangle', vol: .025 });
+      noise(.14, { f1: 1800, f2: 420, q: .8, vol: .045, attack: .006 });
       break;
     case 'select':
-      noise(.34, { f1: 280, f2: 3400, q: 1.3, vol: .16, attack: .07 });
-      osc(659.3, 659.3, .55, { type: 'triangle', vol: .045, delay: .13 });
-      osc(987.8, 987.8, .7, { vol: .035, delay: .19 });
+      noise(.42, { f1: 180, f2: 1250, q: .85, vol: .13, attack: .055 });
+      osc(220, 330, .34, { type: 'triangle', vol: .06, delay: .06 });
+      osc(330, 495, .48, { type: 'sine', vol: .035, delay: .12 });
       break;
     case 'back':
-      noise(.32, { f1: 3000, f2: 240, q: 1.3, vol: .14, attack: .04 });
-      osc(440, 220, .32, { type: 'triangle', vol: .04, delay: .05 });
+      noise(.3, { f1: 1500, f2: 190, q: .9, vol: .11, attack: .035 });
+      osc(330, 165, .3, { type: 'triangle', vol: .045, delay: .035 });
       break;
     case 'install':
       osc(784, 784, .35, { vol: .05 });
@@ -516,6 +571,9 @@ function startHum() {
   const lfo = c.createOscillator(), lg = c.createGain();
   lfo.frequency.value = .11; lg.gain.value = .006;
   lfo.connect(lg).connect(g.gain); lfo.start(); nodes.push(lfo);
+  const air = c.createBufferSource(), airFilter = c.createBiquadFilter(), airGain = c.createGain();
+  air.buffer = noiseBuf; air.loop = true; airFilter.type = 'lowpass'; airFilter.frequency.value = 185; airFilter.Q.value = .7;
+  airGain.gain.value = .35; air.connect(airFilter).connect(airGain).connect(g); air.start(); nodes.push(air);
   f.connect(g).connect(master);
   g.gain.setTargetAtTime(.02, c.currentTime, 2);
   hum = { g, nodes };
@@ -777,7 +835,7 @@ function applyGL() {
   const u = GL.orbMat.uniforms;
   u.uDeep.value.copy(C(.85, .05)); u.uMid.value.copy(C(.9, .3)); u.uHi.value.copy(C(1, .62));
   const b = GL.bgMat.uniforms;
-  b.uA.value.copy(C(.7, .03)); b.uB.value.copy(C(.85, .15)); b.uC.value.copy(C(1, .55));
+  b.uA.value.copy(C(.7, .018)); b.uB.value.copy(C(.8, .075)); b.uC.value.copy(C(1, .34));
   b.uL.value.copy(C(.35, .93)); b.uL2.value.copy(C(.45, .8)); b.uLight.value = dark ? 0 : 1;
   GL.scene.fog.color.copy(dark ? C(.7, .03) : C(.35, .9));
   const blend = dark ? THREE.AdditiveBlending : THREE.NormalBlending;
@@ -818,13 +876,13 @@ function toast(msg) {
    ========================================================= */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const appById = id => CATALOG.find(c => c.id === id);
-const TITLES = { apps: 'Apps', media: 'Media', store: 'Store', settings: 'Settings', system: 'System' };
+const TITLES = { apps: 'Memory', media: 'Music', store: 'Xbox Live', settings: 'Settings', system: 'System' };
 const DESCS = {
-  apps: 'Your installed apps. Pick one to open it.',
-  media: 'An ambient screensaver, a generative soundscape and a test pattern for checking your TV’s picture.',
-  store: 'Add or remove apps. Changes show up in Apps right away.',
+  apps: 'Installed applications and storage.',
+  media: 'Music, ambient mode and display test.',
+  store: 'Streaming services and available applications.',
   settings: 'Press select on a setting to cycle through its options.',
-  system: 'What this dashboard sees about your screen and controllers.'
+  system: 'Display, controller and dashboard information.'
 };
 function connectedPads() {
   try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(Boolean); } catch (e) { return []; }
@@ -861,7 +919,7 @@ const RENDER = {
   settings() {
     return `<div class="list">${SETTINGS.map(s =>
       `<button class="row" data-nav data-action="setting" data-key="${s.key}"><span class="k"><span>${s.label}<small>${s.hint}</small></span></span><span class="v">${s.names[String(state[s.key])]}</span></button>`
-    ).join('')}<button class="row" data-nav data-action="reset"><span class="k"><span>Reset dashboard<small>Restore the default apps and settings</small></span></span><span class="v">Reset</span></button></div>`;
+    ).join('')}<button class="row" data-nav data-go="system"><span class="k"><span>System information<small>Display, controller and build details</small></span></span><span class="v">Open</span></button><button class="row" data-nav data-action="reset"><span class="k"><span>Reset dashboard<small>Restore the default apps and settings</small></span></span><span class="v">Reset</span></button></div>`;
   },
   system() {
     const pads = connectedPads();
@@ -869,12 +927,12 @@ const RENDER = {
     const rows = [
       ['Time zone', tz || 'Unknown'],
       ['Display', `${innerWidth} × ${innerHeight} at ${devicePixelRatio || 1}× scale`],
-      ['Renderer', GL ? `WebGL, ${SETTINGS[3].names[state.quality].toLowerCase()} quality` : 'Basic (WebGL unavailable)'],
+      ['Renderer', GL ? `WebGL, ${SETTINGS[1].names[state.quality].toLowerCase()} quality` : 'Basic (WebGL unavailable)'],
       ['Input', pads.length ? pads.map(p => p.id.split('(')[0].trim() || 'Controller').join(', ') : 'Keyboard or remote'],
       ['Apps installed', `${state.apps.length} of ${CATALOG.length}`],
       ['Build', BUILD]
     ];
-    return `<div class="list">${rows.map(([k, v]) => `<div class="row static"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('')}</div>`;
+    return `<div class="list">${rows.map(([k, v]) => `<button class="row static" data-nav data-action="none"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></button>`).join('')}</div>`;
   }
 };
 
@@ -936,21 +994,10 @@ function moveFocus(dir) {
   else sfx('edge');
 }
 
-/* orb label on home */
-const META = {
-  apps: () => `${state.apps.length} installed`,
-  media: () => drone ? 'Soundscape playing' : '3 tools',
-  store: () => `${CATALOG.length - state.apps.length} available`,
-  settings: () => `${ACCENTS[state.accent].name} theme`,
-  system: () => BUILD
-};
+/* The orb is the dashboard's visual anchor; its light and rings react to focus. */
 function updateOrb(b) {
   if (!b || !b.classList.contains('capsule')) return;
   homeIdx = $$('.capsule').indexOf(b);
-  $('#orbLabel').textContent = 'XBOX';
-  $('#orbDesc').textContent = b.dataset.desc;
-  $('#orbMeta').textContent = META[b.dataset.go]();
-  const ot = $('#orbText'); ot.classList.remove('swap'); void ot.offsetWidth; ot.classList.add('swap');
   S.pulse = Math.max(S.pulse, .3);
 }
 $('#menu').addEventListener('focusin', e => updateOrb(e.target.closest('.capsule')));
@@ -1049,7 +1096,7 @@ function renderGL(t, dt) {
   const spin = 1 + S.ringBoost * 6;
   ringGroup.rotation.x = S.tilt; ringGroup.rotation.y += dt * .08 * spin;
   rings[0].rotation.z += dt * .25 * spin; rings[1].rotation.z -= dt * .18 * spin; rings[2].rotation.z += dt * .1 * spin;
-  rings.forEach((r, i) => r.material.opacity = (.55 - i * .12) * S.dim);
+  rings.forEach((r, i) => r.material.opacity = (.24 - i * .055) * S.dim);
   motes.rotation.y += dt * (.15 + S.ringBoost);
   motes.material.opacity = .8 * S.dim;
   if (S.shockT >= 0) {
@@ -1078,7 +1125,7 @@ function renderGL(t, dt) {
     a.needsUpdate = true;
     field.rotation.y = Math.sin(t * .03) * .08;
   }
-  field.material.opacity = .75;
+  field.material.opacity = .42;
 
   const v = orbGroup.position.clone().project(camera);
   bgMat.uniforms.uTime.value = t;

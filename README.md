@@ -1,15 +1,19 @@
-# Xbox TV Dashboard
+# Xbox Dashboard for LG TV
 
-The dashboard remains a single self-contained HTML file. The current pass keeps Verdant's Apps, Media, Store, Settings, and System functions while applying the green phosphor, orb, and high-contrast controller focus language of the original Xbox dashboard.
+A single-file dashboard recreation inspired by the original 2001 Xbox home screen. The home screen uses the classic Memory, Music, Xbox Live, and Settings labels with a green orb and animated phosphor background. TV apps, ambient mode, display test, controller support, and visual-quality settings are adapted inside those sections.
 
 ## Run
 
-Open `verdant-dashboard.html` in a browser. The Three.js renderer and Google Fonts continue to load from the existing CDNs.
+Open `verdant-dashboard.html` in a modern browser. The Three.js renderer is loaded from the existing CDN. Browser audio begins after the first user action.
 
-Press **F** to show or hide the frame-time overlay. It reports average frame time and the 99th-percentile frame time (the slowest 1% of frames) for each quality and screen combination observed in the current session.
+Use arrow keys and Enter, the LG remote, or a gamepad. Press **F** to show or hide frame-time statistics.
 
 ## Visual QA
 
-Playwright is a development-only dependency; it is not loaded by the dashboard. Install dependencies and Chromium, then run `npm run qa:screenshots`. The capture script uses keyboard input at 1920×1080 and 1280×720, saves images in `qa/screenshots/`, and records frame-time samples in `qa/performance.json`.
+Playwright is a development-only dependency. Install dependencies and its Chromium build, then run `npm run qa:screenshots`. The script uses keyboard events at 1920×1080 and 1280×720, saves screenshots to `qa/screenshots/`, and measures five seconds of frame times per quality on the home screen and in Memory.
 
-The capture script includes gate, boot, menu focus, sub-screen focus, overlays, theme, accents, and quality states. It measures five seconds per quality and screen state after the matching screenshot.
+The current capture run may require a normal desktop Terminal because Chromium launch is restricted in some managed environments. `qa/report.md` records exactly which captures and measurements belong to the current design pass.
+
+## Reference
+
+The supplied [Original Xbox startup and dashboard video](https://www.youtube.com/watch?v=nm6XchTak40) is the visual and motion reference. LG’s [webOS Web API and Web Engine table](https://webostv.developer.lge.com/develop/specifications/web-api-and-web-engine) lists the browser engines used by older TV releases.

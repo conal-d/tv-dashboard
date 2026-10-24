@@ -1,0 +1,98 @@
+[
+  {
+    "viewport": "1920x1080",
+    "quality": "high",
+    "scene": "home",
+    "frames": 38,
+    "averageFrameMs": 132.44999999999996,
+    "onePercentLowFrameMs": 166.59999999999854
+  },
+  {
+    "viewport": "1920x1080",
+    "quality": "high",
+    "scene": "apps",
+    "frames": 40,
+    "averageFrameMs": 125.82749999999979,
+    "onePercentLowFrameMs": 150
+  },
+  {
+    "viewport": "1920x1080",
+    "quality": "balanced",
+    "scene": "home",
+    "frames": 47,
+    "averageFrameMs": 108.8595744680853,
+    "onePercentLowFrameMs": 116.80000000000291
+  },
+  {
+    "viewport": "1920x1080",
+    "quality": "balanced",
+    "scene": "apps",
+    "frames": 48,
+    "averageFrameMs": 104.51041666666667,
+    "onePercentLowFrameMs": 116.69999999999709
+  },
+  {
+    "viewport": "1920x1080",
+    "quality": "low",
+    "scene": "home",
+    "frames": 106,
+    "averageFrameMs": 47.48207547169803,
+    "onePercentLowFrameMs": 50.10000000000582
+  },
+  {
+    "viewport": "1920x1080",
+    "quality": "low",
+    "scene": "apps",
+    "frames": 109,
+    "averageFrameMs": 46.022935779816514,
+    "onePercentLowFrameMs": 50.10000000000582
+  },
+  {
+    "viewport": "1280x720",
+    "quality": "high",
+    "scene": "home",
+    "frames": 82,
+    "averageFrameMs": 61.176829268292686,
+    "onePercentLowFrameMs": 66.80000000000291
+  },
+  {
+    "viewport": "1280x720",
+    "quality": "high",
+    "scene": "apps",
+    "frames": 85,
+    "averageFrameMs": 59.40941176470583,
+    "onePercentLowFrameMs": 66.70000000000437
+  },
+  {
+    "viewport": "1280x720",
+    "quality": "balanced",
+    "scene": "home",
+    "frames": 89,
+    "averageFrameMs": 56.36516853932584,
+    "onePercentLowFrameMs": 83.39999999999418
+  },
+  {
+    "viewport": "1280x720",
+    "quality": "balanced",
+    "scene": "apps",
+    "frames": 88,
+    "averageFrameMs": 57.38409090909094,
+    "onePercentLowFrameMs": 100.09999999999854
+  },
+  {
+    "viewport": "1280x720",
+    "quality": "low",
+    "scene": "home",
+    "frames": 167,
+    "averageFrameMs": 30.03832335329338,
+    "onePercentLowFrameMs": 50
+  },
+  {
+    "viewport": "1280x720",
+    "quality": "low",
+    "scene": "apps",
+    "frames": 179,
+    "averageFrameMs": 28.02513966480447,
+    "onePercentLowFrameMs": 66.60000000000582
+  }
+]
